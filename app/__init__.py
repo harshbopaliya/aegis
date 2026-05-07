@@ -1,3 +1,3 @@
-"""AI Agent Safety Gateway — control plane package."""
+"""Aegis — control plane package."""
 
 __version__ = "0.1.0"

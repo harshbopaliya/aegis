@@ -1,0 +1,48 @@
+[Unit]
+Description=Aegis - Production Service
+Documentation=https://github.com/harshbopaliya/aegis
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=gateway
+Group=gateway
+WorkingDirectory=/opt/aegis
+
+# Environment
+EnvironmentFile=/opt/aegis/.env
+Environment="PATH=/opt/aegis/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Start command
+ExecStart=/opt/aegis/venv/bin/python -m uvicorn app.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 4 \
+    --access-log
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/aegis/data /opt/aegis/logs
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=4G
+CPUQuota=200%
+
+# Health check
+ExecHealthCheck=/usr/bin/curl -f http://localhost:8000/health/ready || exit 1
+
+[Install]
+WantedBy=multi-user.target

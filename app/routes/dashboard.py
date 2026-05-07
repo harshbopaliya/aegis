@@ -19,7 +19,7 @@ router = APIRouter(prefix="/v1/dashboard", tags=["dashboard"])
 def dashboard_overview(hours: int = Query(default=24, ge=1, le=720)):
     """Single poll-friendly payload for the operator UI."""
     return {
-        "product": "AI Agent Safety Gateway",
+        "product": "Aegis",
         "pipeline_modules": [
             {"id": "agent_registry", "title": "Agent registry / identity", "order": 0},
             {"id": "token_scoping", "title": "Token scoping", "order": 1},

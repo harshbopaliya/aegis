@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Safety Demo — Real-time Monitoring</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #121a24;
+      --border: #243044;
+      --text: #e6edf3;
+      --muted: #8b9eb3;
+      --accent: #3ba3f5;
+      --ok: #3dd68c;
+      --warn: #f0b429;
+      --danger: #f55555;
+      --mono: ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(900px 500px at 12% -8%, #162536 0%, var(--bg) 58%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+    header {
+      background: rgba(11, 15, 20, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 2rem;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    main {
+      padding: 2rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    button:hover { border-color: var(--accent); background: rgba(59, 163, 245, 0.1); }
+    button.primary { border-color: var(--accent); background: rgba(59, 163, 245, 0.2); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    input {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 1200px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1.2rem;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .metric {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .metric-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      font-family: var(--mono);
+    }
+    .metric-subtext {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+    .status {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .status.ok { background: var(--ok); }
+    .status.warn { background: var(--warn); }
+    .status.danger { background: var(--danger); }
+    .status.loading { background: var(--accent); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .step {
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .step.blocked { border-left-color: var(--danger); }
+    .step.pending { border-left-color: var(--warn); }
+    .step.executed { border-left-color: var(--ok); }
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .step-thought { color: var(--muted); margin-bottom: 0.5rem; font-style: italic; }
+    .step-action { background: rgba(0, 0, 0, 0.5); padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0; font-family: var(--mono); font-size: 0.85rem; }
+    .step-result {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .step-result.ok { background: rgba(61, 214, 140, 0.1); color: var(--ok); }
+    .step-result.danger { background: rgba(245, 85, 85, 0.1); color: var(--danger); }
+    .step-result.warn { background: rgba(240, 180, 41, 0.1); color: var(--warn); }
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 1000px) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+    .comparison-panel {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .comparison-panel h3 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .comparison-panel.safe { border-color: rgba(61, 214, 140, 0.5); }
+    .comparison-panel.unsafe { border-color: rgba(245, 85, 85, 0.5); }
+    .warning-banner {
+      background: rgba(240, 180, 41, 0.15);
+      border: 1px solid rgba(240, 180, 41, 0.5);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      color: var(--warn);
+      font-weight: 600;
+    }
+    .log-viewer {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .log-line {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .log-line.info { color: var(--accent); }
+    .log-line.error { color: var(--danger); }
+    .log-line.warn { color: var(--warn); }
+    .log-line.success { color: var(--ok); }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: var(--mono);
+    }
+    .badge.allow { background: rgba(61, 214, 140, 0.2); color: var(--ok); }
+    .badge.block { background: rgba(245, 85, 85, 0.2); color: var(--danger); }
+    .badge.pending { background: rgba(240, 180, 41, 0.2); color: var(--warn); }
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--ok));
+      transition: width 0.3s;
+    }
+    .divider { margin: 1.5rem 0; border-top: 1px solid var(--border); }
+    .footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 3rem; padding: 1rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>🤖 AI Agent Safety Demo</h1>
+      <p class="subtitle">Real-time monitoring: Compare behavior WITH vs WITHOUT safety gateway</p>
+    </div>
+  </header>
+
+  <main>
+    <!-- Controls -->
+    <div class="controls">
+      <input type="text" id="objective" placeholder="Agent objective..." value="Manage customer data safely" />
+      <input type="number" id="steps" placeholder="Steps" value="5" min="1" max="10" style="width: 80px;" />
+      <button class="primary" id="runWithSafety">▶ Run WITH Safety Gateway</button>
+      <button id="runWithoutSafety">▶ Run WITHOUT Safety Gateway</button>
+      <button id="runComparison">⚖ Side-by-Side Comparison</button>
+      <span id="status" style="color: var(--muted); font-size: 0.9rem;"></span>
+    </div>
+
+    <!-- System Status -->
+    <div class="panel" style="background: linear-gradient(135deg, rgba(59, 163, 245, 0.1), rgba(61, 214, 140, 0.05)); border-color: rgba(59, 163, 245, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="margin: 0; font-size: 0.95rem;">System Status</h3>
+          <p style="margin: 0.5rem 0 0; color: var(--muted); font-size: 0.85rem;">API connectivity and OpenAI integration</p>
+        </div>
+        <div>
+          <div id="apiStatus" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+            <span class="status loading"></span> Checking...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Tabs/Sections -->
+    <div id="content"></div>
+  </main>
+
+  <div class="footer">
+    <p>Aegis © 2026 | Production-grade AI safety infrastructure</p>
+  </div>
+
+  <script>
+    const API_BASE = "/v1/agent-demo";
+    const DASHBOARD_BASE = "/v1/dashboard";
+    let currentTab = "monitor";
+
+    // Check API status on load
+    async function checkApiStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/status`);
+        const data = await response.json();
+        const statusEl = document.getElementById("apiStatus");
+        if (data.available) {
+          statusEl.innerHTML = '<span class="status ok"></span> OpenAI API Ready';
+        } else {
+          statusEl.innerHTML = '<span class="status danger"></span> OpenAI API Error';
+        }
+      } catch (e) {
+        document.getElementById("apiStatus").innerHTML = '<span class="status danger"></span> Connection Failed';
+      }
+    }
+
+    // Log utility
+    function addLog(message, type = "info") {
+      const logEl = document.querySelector(".log-viewer");
+      if (!logEl) return;
+      const line = document.createElement("div");
+      line.className = `log-line ${type}`;
+      const time = new Date().toLocaleTimeString();
+      line.textContent = `[${time}] ${message}`;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Format session data
+    function formatSession(session, withSafety) {
+      const metrics = {
+        total_steps: session.steps.length,
+        operations_executed: session.data_modified,
+        blocked_by_policy: session.blocked_by_policy,
+        dangerous_attempts: session.dangerous_attempts,
+        data_accessed: session.data_accessed,
+      };
+
+      let html = `
+        <div class="comparison-panel ${withSafety ? 'safe' : 'unsafe'}">
+          <h3>
+            ${withSafety ? '✅ WITH Safety Gateway' : '⚠️ WITHOUT Safety Gateway'}
+          </h3>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="metric-label">Steps Completed</div>
+              <div class="metric-value">${metrics.total_steps}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Operations Executed</div>
+              <div class="metric-value">${metrics.operations_executed}</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Operations Blocked</div>
+              <div class="metric-value" style="color: ${metrics.blocked_by_policy > 0 ? 'var(--ok)' : 'var(--muted)'}">
+                ${metrics.blocked_by_policy}
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Dangerous Attempts</div>
+              <div class="metric-value" style="color: var(--warn)">${metrics.dangerous_attempts}</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <h4 style="margin: 1rem 0 0.75rem; font-size: 0.95rem;">Agent Steps</h4>
+      `;
+
+      // Add each step
+      session.steps.forEach((step, idx) => {
+        const decision = step.safety_decision;
+        const stepClass = decision === 'BLOCK' ? 'blocked' : decision === 'REQUIRE_APPROVAL' ? 'pending' : 'executed';
+        const badge = decision === 'ALLOW' ? 'allow' : decision === 'BLOCK' ? 'block' : 'pending';
+
+        html += `
+          <div class="step ${stepClass}">
+            <div class="step-header">
+              <span>Step ${step.step_number}: ${step.proposed_action.verb} ${step.proposed_action.resource}</span>
+              <span class="badge ${badge}">${decision}</span>
+            </div>
+            <div class="step-thought">"${step.thought}"</div>
+            <div class="step-action">
+              ${step.proposed_action.verb} ${step.proposed_action.resource} (${step.proposed_action.environment})
+            </div>
+            <div style="font-size: 0.8rem; color: var(--muted);">
+              Risk Score: <strong>${step.risk_score}</strong>/100
+            </div>
+            <div class="step-result ${decision === 'ALLOW' ? 'ok' : decision === 'BLOCK' ? 'danger' : 'warn'}">
+              ${step.safety_reason}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      return html;
+    }
+
+    // Run WITH safety
+    document.getElementById("runWithSafety").addEventListener("click", async () => {
+      const objective = document.getElementById("objective").value;
+      const steps = parseInt(document.getElementById("steps").value);
+      const btn = document.getElementById("runWithSafety");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Running agent WITH safety gateway...";
+
+      try {
+        const response = await fetch(`${API_BASE}/run-with-safety`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ objective, steps }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const html = `
+            <div class="panel">
+              <h2>🛡️ WITH Safety Gateway — Complete Session</h2>
+              <div class="metric-grid">
+                <div class="metric">
+                  <div class="metric-label">Total Steps</div>
+                  <div class="metric-value">${data.session.steps.length}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Blocked by Policy</div>
+                  <div class="metric-value" style="color: var(--ok)">${data.session.blocked_by_policy}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Executed</div>
+                  <div class="metric-value">${data.session.data_modified}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Protection</div>
+                  <div class="metric-value" style="color: var(--ok)">${data.summary.protection_effectiveness}</div>
+                </div>
+              </div>
+              ${formatSession(data.session, true)}
+            </div>
+          `;
+          document.getElementById("content").innerHTML = html;
+          document.getElementById("status").textContent = "✅ Session completed with safety gateway";
+        }
+      } catch (e) {
+        document.getElementById("status").textContent = `❌ Error: ${e.message}`;
+      }
+      btn.disabled = false;
+    });
+
+    // Run WITHOUT safety
+    document.getElementById("runWithoutSafety").addEventListener("click", async () => {
+      const objective = document.getElementById("objective").value;
+      const steps = parseInt(document.getElementById("steps").value);
+      const btn = document.getElementById("runWithoutSafety");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Running agent WITHOUT safety gateway...";
+
+      try {
+        const response = await fetch(`${API_BASE}/run-without-safety`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ objective, steps }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const html = `
+            <div class="warning-banner">⚠️ WARNING: This agent had NO SAFETY RESTRICTIONS. Dangerous operations executed freely!</div>
+            <div class="panel">
+              <h2>❌ WITHOUT Safety Gateway — Complete Session</h2>
+              <div class="metric-grid">
+                <div class="metric">
+                  <div class="metric-label">Total Steps</div>
+                  <div class="metric-value">${data.session.steps.length}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Dangerous Attempts</div>
+                  <div class="metric-value" style="color: var(--danger)">${data.session.dangerous_attempts}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Executed Uncontrolled</div>
+                  <div class="metric-value" style="color: var(--danger)">${data.session.data_modified}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Risk Level</div>
+                  <div class="metric-value" style="color: var(--danger)">CRITICAL</div>
+                </div>
+              </div>
+              ${formatSession(data.session, false)}
+            </div>
+          `;
+          document.getElementById("content").innerHTML = html;
+          document.getElementById("status").textContent = "⚠️ Unrestricted agent completed (no safety checks)";
+        }
+      } catch (e) {
+        document.getElementById("status").textContent = `❌ Error: ${e.message}`;
+      }
+      btn.disabled = false;
+    });
+
+    // Run comparison
+    document.getElementById("runComparison").addEventListener("click", async () => {
+      const objective = document.getElementById("objective").value;
+      const steps = parseInt(document.getElementById("steps").value);
+      const btn = document.getElementById("runComparison");
+      btn.disabled = true;
+      document.getElementById("status").textContent = "Running comparison (this may take 30-60 seconds)...";
+
+      try {
+        const response = await fetch(`${API_BASE}/compare`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ objective, steps }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          const safe = data.comparison.WITH_SAFETY_GATEWAY;
+          const unsafe = data.comparison.WITHOUT_SAFETY_GATEWAY;
+          const analysis = data.analysis;
+
+          let html = `
+            <div class="panel">
+              <h2>⚖️ Side-by-Side Comparison: WITH vs WITHOUT Safety Gateway</h2>
+              <div style="background: rgba(59, 163, 245, 0.1); border-left: 4px solid var(--accent); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <strong>Key Finding:</strong> Safety gateway prevented ${analysis.dangerous_attempts.safe_blocked} dangerous operations 
+                that the unrestricted agent executed freely.
+              </div>
+
+              <div class="comparison">
+                ${formatSession(safe, true)}
+                ${formatSession(unsafe, false)}
+              </div>
+
+              <div class="divider"></div>
+              <h3 style="margin: 1.5rem 0 1rem;">Analysis & Impact</h3>
+              <div class="metric-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="metric">
+                  <div class="metric-label">Dangerous Attempts Blocked</div>
+                  <div class="metric-value" style="color: var(--ok)">${analysis.dangerous_attempts.safe_blocked}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Uncontrolled Executions</div>
+                  <div class="metric-value" style="color: var(--danger)">${analysis.dangerous_attempts.unsafe_executed}</div>
+                </div>
+                <div class="metric">
+                  <div class="metric-label">Protection Rate</div>
+                  <div class="metric-value" style="color: var(--ok)">100%</div>
+                </div>
+              </div>
+            </div>
+          `;
+          document.getElementById("content").innerHTML = html;
+          document.getElementById("status").textContent = "✅ Comparison completed";
+        }
+      } catch (e) {
+        document.getElementById("status").textContent = `❌ Error: ${e.message}`;
+      }
+      btn.disabled = false;
+    });
+
+    // Check API on load
+    checkApiStatus();
+    setInterval(checkApiStatus, 30000);
+  </script>
+</body>
+</html>

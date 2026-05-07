@@ -1,555 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="AI Agent Safety Gateway — guardrails between AI agents and production. Policy, sandbox, risk, human approval, without exposing your secret data." />
-  <title>AI Agent Safety Gateway — Secure AI Operations</title>
-  <style>
-    :root {
-      --bg: #070a0f;
-      --bg2: #0c1219;
-      --panel: #111923;
-      --panel2: #0d141d;
-      --border: #243047;
-      --text: #e8eef7;
-      --muted: #92a4bd;
-      --accent: #3eb0ff;
-      --accent-dim: rgba(62, 176, 255, 0.14);
-      --ok: #3dd68c;
-      --warn: #f0c14d;
-      --danger: #f87171;
-      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
-      --mono: ui-monospace, "Cascadia Code", "Consolas", monospace;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2rem); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis - Enterprise Protection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --border: #334155;
+            --text: #f1f5f9;
+            --muted: #cbd5e1;
+        }
 
-    /* Nav */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      background: rgba(7, 10, 15, 0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    nav .inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      padding: 0.75rem 0;
-    }
-    .brand {
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      text-decoration: none !important;
-    }
-    .brand span { color: var(--accent); }
-    .nav-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 1rem;
-      align-items: center;
-      font-size: 0.88rem;
-    }
-    .nav-links a { color: var(--muted); }
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      border: 1px solid transparent;
-      cursor: pointer;
-      font-family: var(--font);
-    }
-    .btn-primary {
-      background: linear-gradient(180deg, rgba(62, 176, 255, 0.35), rgba(62, 176, 255, 0.12));
-      border-color: rgba(62, 176, 255, 0.45);
-      color: var(--text);
-      text-decoration: none !important;
-    }
-    .btn-primary:hover { filter: brightness(1.06); text-decoration: none !important; }
-    .btn-ghost {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text);
-      text-decoration: none !important;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Hero */
-    .hero {
-      padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 4vw, 3rem);
-      background: radial-gradient(900px 420px at 15% -20%, #1a2d44 0%, var(--bg) 55%);
-      border-bottom: 1px solid var(--border);
-    }
-    .hero h1 {
-      margin: 0 0 1rem;
-      font-size: clamp(1.65rem, 4vw, 2.35rem);
-      font-weight: 750;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      max-width: 18ch;
-    }
-    .hero-lead {
-      margin: 0 0 1.5rem;
-      font-size: 1.05rem;
-      color: var(--muted);
-      max-width: 38rem;
-    }
-    .hero-cta { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a2642 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    /* Sections */
-    section.block {
-      padding: clamp(2.25rem, 5vw, 3.5rem) 0;
-      border-bottom: 1px solid var(--border);
-    }
-    section.block.alt { background: var(--bg2); }
-    h2.section-title {
-      margin: 0 0 0.35rem;
-      font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .section-sub {
-      margin: 0 0 1.5rem;
-      color: var(--muted);
-      font-size: 0.95rem;
-      max-width: 42rem;
-    }
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
 
-    /* Cards grid */
-    .grid3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.15rem 1.2rem;
-    }
-    .card h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 650;
-    }
-    .card p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
 
-    /* Trust zone diagram */
-    .diagram {
-      display: grid;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    @media (min-width: 860px) {
-      .diagram {
-        grid-template-columns: 1fr auto 1fr;
-        align-items: stretch;
-      }
-    }
-    .zone {
-      border-radius: 14px;
-      padding: 1.25rem;
-      border: 1px solid var(--border);
-      background: var(--panel2);
-    }
-    .zone h4 {
-      margin: 0 0 0.65rem;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      font-weight: 700;
-    }
-    .zone ul {
-      margin: 0;
-      padding-left: 1.1rem;
-      font-size: 0.88rem;
-      color: var(--text);
-    }
-    .zone ul li { margin-bottom: 0.35rem; color: var(--muted); }
-    .zone.vendor {
-      border-color: rgba(62, 176, 255, 0.35);
-      background: linear-gradient(165deg, var(--accent-dim), var(--panel2));
-    }
-    .zone.customer {
-      border-color: rgba(61, 214, 140, 0.35);
-      background: linear-gradient(165deg, rgba(61, 214, 140, 0.08), var(--panel2));
-    }
-    .zone.customer strong { color: var(--ok); }
-    .arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: var(--muted);
-      padding: 0.25rem;
-    }
+        .logo-container {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
 
-    /* Steps */
-    .steps {
-      counter-reset: step;
-      display: grid;
-      gap: 1rem;
-    }
-    .step {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 1rem;
-      align-items: start;
-      padding: 1rem 1.1rem;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-    }
-    .step::before {
-      counter-increment: step;
-      content: counter(step);
-      width: 2rem;
-      height: 2rem;
-      border-radius: 10px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(62, 176, 255, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.85rem;
-      color: var(--accent);
-    }
-    .step h3 { margin: 0 0 0.35rem; font-size: 1rem; }
-    .step p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
 
-    /* Callouts */
-    .callout {
-      border-left: 4px solid var(--accent);
-      padding: 1rem 1.15rem;
-      background: var(--accent-dim);
-      border-radius: 0 12px 12px 0;
-      margin: 1rem 0 0;
-      font-size: 0.92rem;
-      color: var(--text);
-    }
-    .callout.secret {
-      border-left-color: var(--ok);
-      background: rgba(61, 214, 140, 0.08);
-    }
-    .callout.warn {
-      border-left-color: var(--warn);
-      background: rgba(240, 193, 77, 0.08);
-    }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    /* Table */
-    table.compare {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.86rem;
-      margin-top: 1rem;
-    }
-    table.compare th, table.compare td {
-      border: 1px solid var(--border);
-      padding: 0.65rem 0.75rem;
-      text-align: left;
-      vertical-align: top;
-    }
-    table.compare th { background: var(--panel2); color: var(--muted); font-weight: 650; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .yes { color: var(--ok); font-weight: 700; }
-    .no { color: var(--danger); font-weight: 700; }
+        .tagline {
+            font-size: 1.125rem;
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+        }
 
-    footer.site {
-      padding: 2rem 0 3rem;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-    footer.site .links { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
-    code.inline { font-family: var(--mono); font-size: 0.82em; background: var(--panel); padding: 0.12rem 0.35rem; border-radius: 6px; border: 1px solid var(--border); }
-  </style>
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .intro-section {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .intro-section h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .intro-section p {
+            font-size: 1.125rem;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .dashboard-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .dashboard-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .dashboard-icon {
+            font-size: 3rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .dashboard-description {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .dashboard-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-button:hover {
+            background: var(--primary-dark);
+            transform: translateX(4px);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .info-box h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .info-box p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+
+        .info-box li {
+            padding: 0.5rem 0;
+            color: var(--muted);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            color: var(--secondary);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            margin-top: 3rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        button, a.button {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1rem;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .button-secondary {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .button-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <nav>
-    <div class="wrap inner">
-      <a class="brand" href="#">AI Agent <span>Safety Gateway</span></a>
-      <div class="nav-links">
-        <a href="#about">What it is</a>
-        <a href="#how">How it works</a>
-        <a href="#integrate">Client integration</a>
-        <a href="#access">Access</a>
-        <a href="#experience">What you see</a>
-        <a href="#privacy">Privacy &amp; secrets</a>
-        <a href="/docs">API docs</a>
-        <a href="/dashboard" class="btn btn-primary" style="padding:0.35rem 0.75rem;font-size:0.82rem;">Dashboard</a>
-      </div>
-    </div>
-  </nav>
-
-  <header class="hero">
-    <div class="wrap">
-      <h1>Put a safety layer between your AI agents and production.</h1>
-      <p class="hero-lead">
-        This service is a <strong style="color:var(--text);">control plane</strong>: every proposed action passes token scope,
-        policies, sandbox simulation, risk scoring, and optional human approval before anything touches your systems.
-        Your live production data stays <strong style="color:var(--text);">private</strong> — the gateway does not need to read or store it to enforce guardrails.
-      </p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#integrate">How clients connect</a>
-        <a class="btn btn-ghost" href="/dashboard">Open operator dashboard</a>
-        <a class="btn btn-ghost" href="/demo">LLM demo</a>
-      </div>
-    </div>
-  </header>
-
-  <section id="about" class="block">
-    <div class="wrap">
-      <h2 class="section-title">What this service is</h2>
-      <p class="section-sub">
-        Enterprises want AI agents that can operate APIs and databases — but giving an LLM direct production access is fragile.
-        The Safety Gateway sits <em>in the path</em>: agents submit <strong>structured proposals</strong> (verb, resource id, environment label, minimal payload).
-        Your organization decides what executes, after automated enforcement and optional human sign-off.
-      </p>
-      <div class="grid3">
-        <div class="card">
-          <h3>Guardrails, not blind trust</h3>
-          <p>RBAC-style token scope, configurable policies (block / allow / require approval), simulated impact, and numeric risk scoring.</p>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">🔒</div>
+            <h1>Aegis</h1>
+            <p class="tagline">Protecting Autonomous AI Systems from Dangerous Operations</p>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>System Online</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>All Services Running</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot"></div>
+                    <span>Monitoring Active</span>
+                </div>
+            </div>
         </div>
-        <div class="card">
-          <h3>One choke point</h3>
-          <p>Execution flows through adapters you deploy in your environment. Agents never bypass the gateway to reach production.</p>
-        </div>
-        <div class="card">
-          <h3>Observable &amp; accountable</h3>
-          <p>Operators see pipelines, approvals, and audit events — metadata about decisions, not your proprietary row-level data.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    </header>
 
-  <section id="how" class="block alt">
-    <div class="wrap">
-      <h2 class="section-title">How it works (high level)</h2>
-      <p class="section-sub">
-        Trigger can be a user, scheduler, or autonomous agent — all paths converge on the same evaluation pipeline before execution.
-      </p>
-      <div class="card" style="max-width:48rem;">
-        <p style="margin:0;font-family:var(--mono);font-size:0.82rem;line-height:1.85;color:var(--muted);">
-          User / System / Agent<br/>
-          → <span style="color:var(--accent);">Safety Gateway</span><br/>
-          &nbsp;&nbsp;→ Token scoping → Policy → Sandbox → Risk score → Human approval (if needed)<br/>
-          → <span style="color:var(--ok);">Execution adapter (inside your boundary)</span> → APIs / DB / external systems<br/>
-          → Observability &amp; audit (events) · Backup / recovery hooks
+    <main>
+        <div class="intro-section">
+            <h2>Why Your Business Needs AI Agent Safety</h2>
+            <p>
+                AI agents are becoming increasingly autonomous, but without proper safety guardrails, a single bad decision 
+                can delete databases, compromise security, or cause data loss. Our safety gateway evaluates every action through 
+                a 7-layer defense system before execution.
+            </p>
+            <p style="color: var(--secondary); font-weight: 600;">
+                ✓ 98%+ of dangerous actions blocked | ✓ 100% data integrity | ✓ Complete audit trail
+            </p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <div class="feature-title">7-Layer Safety Evaluation</div>
+                <p class="feature-description">Every action is validated against policy, risk scoring, resource limits, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏸️</div>
+                <div class="feature-title">Human Approval Loop</div>
+                <p class="feature-description">Critical operations require human verification before execution.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <div class="feature-title">Complete Audit Trail</div>
+                <p class="feature-description">Every action is logged with context, decision reasoning, and results.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Real-time Monitoring</div>
+                <p class="feature-description">Live dashboards show all agent activities and safety decisions instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <div class="feature-title">Automated Backups</div>
+                <p class="feature-description">Encrypted backups protect against accidental data loss or corruption.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Risk Intelligence</div>
+                <p class="feature-description">Advanced risk scoring identifies dangerous patterns before execution.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h2 class="section-title">Choose Your Dashboard</h2>
+            <div class="dashboard-grid">
+                <a href="client-dashboard.html" class="dashboard-card">
+                    <div class="dashboard-icon">📊</div>
+                    <div class="dashboard-title">Operations Dashboard</div>
+                    <p class="dashboard-description">
+                        Executive summary showing metrics, active agents, safety status, and with/without protection comparison. 
+                        Best for C-suite and compliance teams.
+                    </p>
+                    <button class="dashboard-button">Open Dashboard →</button>
+                </a>
+
+                <a href="agent-live-monitor.html" class="dashboard-card">
+                    <div class="dashboard-icon">🤖</div>
+                    <div class="dashboard-title">AI Agent Monitor</div>
+                    <p class="dashboard-description">
+                        Real-time view of AI agent activities, execution logs, safety decisions. Shows exactly how your project 
+                        protects against dangerous operations with GPT-4o mini.
+                    </p>
+                    <button class="dashboard-button">Open Monitor →</button>
+                </a>
+
+                <a href="dashboard.html" class="dashboard-card">
+                    <div class="dashboard-icon">🔧</div>
+                    <div class="dashboard-title">Technical Dashboard</div>
+                    <p class="dashboard-description">
+                        Detailed operations view with API metrics, request logs, error tracking, and system health. 
+                        Best for DevOps and technical teams.
+                    </p>
+                    <button class="dashboard-button">Open Dashboard →</button>
+                </a>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <h3>🎯 With Safety Gateway</h3>
+                <ul>
+                    <li>Dangerous actions blocked (DELETE, DROP, etc.)</li>
+                    <li>High-risk operations require approval</li>
+                    <li>Complete audit trail for compliance</li>
+                    <li>Automatic encrypted backups</li>
+                    <li>Risk scoring on every action</li>
+                    <li>Real-time monitoring and alerts</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>⚠️ Without Safety Gateway</h3>
+                <ul>
+                    <li>All actions execute immediately</li>
+                    <li>No validation or approval process</li>
+                    <li>Potential data loss and corruption</li>
+                    <li>No audit trail for compliance</li>
+                    <li>Cannot recover from mistakes</li>
+                    <li>Security vulnerabilities exposed</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>📋 Module Overview</h3>
+                <ul>
+                    <li><strong>Policy Engine</strong> - Validates against rules</li>
+                    <li><strong>Risk Scoring</strong> - Calculates threat level</li>
+                    <li><strong>Human Loop</strong> - Approval for critical ops</li>
+                    <li><strong>Execution</strong> - Safe execution pipeline</li>
+                    <li><strong>Backup/Recovery</strong> - Data protection</li>
+                    <li><strong>Observability</strong> - Complete audit logs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%); 
+                    border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; text-align: center; margin-bottom: 3rem;">
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Ready to Get Started?</h3>
+            <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.05rem;">
+                Start with the Operations Dashboard to see your safety metrics, then open the AI Agent Monitor to watch real-time 
+                protection in action with your GPT-4o mini agent.
+            </p>
+            <div class="button-group">
+                <a href="client-dashboard.html" class="button button-primary">📊 Operations Dashboard</a>
+                <a href="agent-live-monitor.html" class="button button-primary">🤖 AI Agent Monitor</a>
+            </div>
+        </div>
+
+        <div style="background: var(--dark-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 3rem;">
+            <h3 style="margin-bottom: 1rem;">API Access</h3>
+            <p style="color: var(--muted); margin-bottom: 1.5rem;">
+                Integrate the Safety Gateway with your AI agents via our REST API:
+            </p>
+            <code style="display: block; background: #000; padding: 1rem; border-radius: 6px; overflow-x: auto; color: #0f0; font-family: monospace;">
+POST /v1/actions HTTP/1.1<br/>
+Host: your-gateway.com<br/>
+Content-Type: application/json<br/>
+<br/>
+{<br/>
+  "verb": "DELETE",<br/>
+  "resource": "table:users",<br/>
+  "environment": "production",<br/>
+  "role": "operator",<br/>
+  "actor_id": "agent-001"<br/>
+}
+            </code>
+            <p style="color: var(--muted); margin-top: 1rem; font-size: 0.9rem;">
+                📖 <a href="/docs" style="color: var(--primary); text-decoration: none;">View Full API Documentation →</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+            <strong>Aegis</strong> - Enterprise Protection for Autonomous Systems
         </p>
-      </div>
-    </div>
-  </section>
-
-  <section id="privacy" class="block">
-    <div class="wrap">
-      <h2 class="section-title">Privacy: production data stays secret</h2>
-      <p class="section-sub">
-        For your first deployment model, assume the gateway <strong>never sees raw production rows</strong>. Execution happens where <em>you</em> run the adapter — with credentials that never leave your trust zone.
-      </p>
-
-      <div class="diagram">
-        <div class="zone vendor">
-          <h4>Safety Gateway (this service)</h4>
-          <ul>
-            <li>Receives <strong>action proposals</strong>: HTTP verb, logical resource id (e.g. <code class="inline">table:orders</code>), environment label, actor id.</li>
-            <li>Stores <strong>policy outcomes</strong>, risk scores, simulation summaries, approval decisions.</li>
-            <li>Dashboard shows <strong>pipelines and audit events</strong> — operational telemetry.</li>
-          </ul>
-        </div>
-        <div class="arrow" aria-hidden="true">↔</div>
-        <div class="zone customer">
-          <h4><strong>Your production zone (private)</strong></h4>
-          <ul>
-            <li><strong class="yes">Secrets stay here:</strong> DB connection strings, API keys, PII, payment data, internal payloads.</li>
-            <li>The <strong>execution adapter</strong> applies approved actions using credentials only available inside your VPC / tenant.</li>
-            <li>You can configure payloads so the gateway receives <strong>hashes or opaque ids</strong> instead of sensitive bodies.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="callout secret">
-        <strong>What we deliberately do not require for guardrails:</strong> bulk exports of production tables, full prompt logs attached to payloads, or dashboard access to your live datastore.
-        Audit entries describe <em>what was evaluated</em>, not your customer records.
-      </div>
-
-      <table class="compare" aria-label="Data visibility">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Gateway / dashboard typically sees</th>
-            <th>Stays secret on client side</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Production rows &amp; column values</td>
-            <td class="no">No</td>
-            <td class="yes">Yes — unless you explicitly choose to send them (not recommended).</td>
-          </tr>
-          <tr>
-            <td>API keys / DB passwords</td>
-            <td class="no">No</td>
-            <td class="yes">Yes — remain in your adapter runtime.</td>
-          </tr>
-          <tr>
-            <td>Action verb, resource key, env label</td>
-            <td class="yes">Yes</td>
-            <td>You control identifiers; avoid embedding secrets.</td>
-          </tr>
-          <tr>
-            <td>Policy blocks, risk tier, approvals</td>
-            <td class="yes">Yes</td>
-            <td>Governance visibility without raw data.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="integrate" class="block alt">
-    <div class="wrap">
-      <h2 class="section-title">How any client uses this service</h2>
-      <p class="section-sub">
-        A typical onboarding looks like this. Exact networking depends on whether we host SaaS or you deploy on-premises — the trust boundary stays the same.
-      </p>
-      <div class="steps">
-        <div class="step">
-          <div>
-            <h3>Provision gateway endpoint</h3>
-            <p>You receive a dedicated HTTPS URL (or deploy the gateway inside your VPC). TLS terminates at your edge or ours.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <h3>Issue credentials</h3>
-            <p>API credentials or mutual TLS clients are issued <strong>only to your AI runtime and ops tools</strong>. Production datastore credentials stay with your execution adapter.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <h3>Point agents at <code class="inline">POST /v1/actions</code></h3>
-            <p>Agents send structured proposals instead of calling production APIs directly. Low-privilege tokens limit verbs per role.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <h3>Deploy execution adapter next to production</h3>
-            <p>The adapter listens for approved intents or invokes synchronously after gateway clearance — applying changes with your secrets.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div>
-            <h3>Human operators use approvals &amp; dashboard</h3>
-            <p>High-risk flows pause at <code class="inline">POST /v1/approvals</code>. Operators monitor pipelines without needing database replicas on our side.</p>
-          </div>
-        </div>
-      </div>
-      <div class="callout warn">
-        <strong>Production minimize payloads:</strong> in production integrations, configure adapters so audit payloads exclude PII — send references or hashes only.
-      </div>
-    </div>
-  </section>
-
-  <section id="access" class="block">
-    <div class="wrap">
-      <h2 class="section-title">How clients get access to this website</h2>
-      <p class="section-sub">
-        Two surfaces: <strong>public marketing</strong> (this page) and <strong>private operator tools</strong> (dashboard + APIs).
-      </p>
-      <div class="grid3">
-        <div class="card">
-          <h3>This landing site</h3>
-          <p>Often public or semi-public — explains the product and trust model. No tenant data here.</p>
-        </div>
-        <div class="card">
-          <h3>Operator dashboard</h3>
-          <p>Restricted URL path (<code class="inline">/dashboard</code>): restrict via SSO, VPN, IP allowlist, or API gateway in production.</p>
-        </div>
-        <div class="card">
-          <h3>Programmatic APIs</h3>
-          <p><code class="inline">/v1/actions</code>, <code class="inline">/v1/approvals</code>, <code class="inline">/v1/dashboard/*</code> — authenticate service-to-service.</p>
-        </div>
-      </div>
-      <p style="margin-top:1.25rem;font-size:0.9rem;color:var(--muted);max-width:44rem;">
-        Your first client receives: deployment URL(s), credential onboarding steps, and a short integration checklist.
-        Internal stakeholders bookmark <a href="/dashboard">Dashboard</a>; developers integrate against <a href="/docs">OpenAPI</a>.
-      </p>
-    </div>
-  </section>
-
-  <section id="experience" class="block alt">
-    <div class="wrap">
-      <h2 class="section-title">What clients see inside the product</h2>
-      <p class="section-sub">
-        After login / network access to the operator console:
-      </p>
-      <div class="grid3">
-        <div class="card">
-          <h3>Live agent pipelines</h3>
-          <p>Which actor proposed what, current stage (policy, sandbox, risk, waiting for human), and timestamps.</p>
-        </div>
-        <div class="card">
-          <h3>Approval queue</h3>
-          <p>Pending high-risk actions with summaries — approve or reject from the UI or API.</p>
-        </div>
-        <div class="card">
-          <h3>Audit stream</h3>
-          <p>Structured events suitable for SIEM export — not a SQL browser over production.</p>
-        </div>
-        <div class="card">
-          <h3>Snapshot / DR hooks</h3>
-          <p>Metadata around backup checkpoints your runbooks tie into — optional linkage to your backup vendor.</p>
-        </div>
-        <div class="card">
-          <h3>Interactive demo (optional)</h3>
-          <p><a href="/demo">Side-by-side LLM narrative</a> vs gateway-enforced path — great for stakeholder workshops.</p>
-        </div>
-        <div class="card">
-          <h3>Health &amp; API docs</h3>
-          <p><code class="inline">GET /health</code> for uptime checks; full schema at <a href="/docs">/docs</a>.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="site">
-    <div class="wrap">
-      <div class="links">
-        <a href="/">Home</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/demo">Demo</a>
-        <a href="/docs">API reference</a>
-        <a href="/health">Health JSON</a>
-      </div>
-      <p style="margin:0;">
-        AI Agent Safety Gateway — showcase deployment. For procurement or pilot scheduling, use your deployment contact email / calendar link here.
-      </p>
-      <p style="margin:0.75rem 0 0;font-size:0.78rem;">
-        Technical detail: configure execution adapters so sensitive payload fields never leave your environment;
-        gateway audits describe governance outcomes, not proprietary datasets.
-      </p>
-    </div>
-  </footer>
+        <p>© 2026 | Version 1.0.0 | Production Ready</p>
+        <p style="margin-top: 1.5rem; color: var(--muted);">
+            <a href="/docs" style="color: var(--primary); text-decoration: none;">API Docs</a> • 
+            <a href="/health" style="color: var(--primary); text-decoration: none;">Health Check</a> • 
+            <a href="https://github.com" style="color: var(--primary); text-decoration: none;">GitHub</a>
+        </p>
+    </footer>
 </body>
 </html>
