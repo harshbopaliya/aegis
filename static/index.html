@@ -3,548 +3,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aegis - Enterprise Protection</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <title>Aegis Platform Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
+            --bg-base: #0b1220;
+            --bg-surface: #111a2d;
+            --bg-card: #182338;
+            --bg-subtle: #0f1728;
+            --border-default: #2a3958;
+            --border-strong: #3b4f78;
             --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --secondary: #10b981;
-            --danger: #ef4444;
-            --dark-bg: #0f172a;
-            --dark-card: #1e293b;
-            --border: #334155;
-            --text: #f1f5f9;
-            --muted: #cbd5e1;
+            --primary-soft: rgba(59, 130, 246, 0.18);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-inverse: #ffffff;
+            --font-sans: "Inter", sans-serif;
+            --font-mono: "IBM Plex Mono", monospace;
+            --shadow-lg: 0 24px 44px rgba(2, 6, 23, 0.35);
+            --transition: all 0.18s ease;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #1a2642 100%);
-            color: var(--text);
             min-height: 100vh;
-            overflow-x: hidden;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background:
+                radial-gradient(circle at 100% -20%, rgba(59, 130, 246, 0.14), transparent 42%),
+                radial-gradient(circle at 0% 120%, rgba(34, 197, 94, 0.08), transparent 44%),
+                var(--bg-base);
         }
 
         header {
-            background: rgba(15, 23, 42, 0.95);
-            border-bottom: 1px solid var(--border);
-            padding: 2rem;
-            backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .logo-container {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .tagline {
-            font-size: 1.125rem;
-            color: var(--muted);
-            margin-bottom: 1.5rem;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .status-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            justify-content: space-between;
+            gap: 2rem;
+            padding: 1rem 2.25rem;
+            border-bottom: 1px solid var(--border-default);
+            background: rgba(11, 18, 32, 0.92);
+            backdrop-filter: blur(10px);
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--secondary);
-            animation: pulse 2s infinite;
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .logo-shield {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(140deg, #2563eb, #0ea5e9);
+            color: var(--text-inverse);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.03rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .header-desc {
+            margin-top: 0.2rem;
+            color: var(--text-secondary);
+            font-size: 0.77rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.4rem;
+            padding: 0.35rem;
+            border-radius: 0.85rem;
+            border: 1px solid var(--border-default);
+            background: var(--bg-subtle);
+        }
+
+        .tab-btn {
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.58rem 0.9rem;
+            border-radius: 0.6rem;
+            font-family: var(--font-sans);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(148, 163, 184, 0.08);
+        }
+
+        .tab-btn.active {
+            color: var(--text-inverse);
+            background: linear-gradient(140deg, #2563eb, #3b82f6);
+            border-color: rgba(147, 197, 253, 0.32);
         }
 
         main {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 3rem 2rem;
+            padding: 1.75rem 1.5rem 2rem;
+            min-height: calc(100vh - 10rem);
         }
 
-        .intro-section {
-            background: var(--dark-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2.5rem;
-            margin-bottom: 3rem;
-            text-align: center;
+        .tab-content-panel {
+            animation: fadeIn 0.4s ease-out;
         }
 
-        .intro-section h2 {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-            color: var(--text);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .intro-section p {
-            font-size: 1.125rem;
-            color: var(--muted);
-            line-height: 1.6;
-            max-width: 900px;
-            margin: 0 auto 1.5rem;
+        /* General Premium Card Styles */
+        .glass-card {
+            background: linear-gradient(180deg, rgba(24, 35, 56, 0.88), rgba(16, 25, 42, 0.88));
+            border: 1px solid var(--border-default);
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+            padding: 1.75rem;
+            transition: var(--transition);
         }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .feature-card {
-            background: var(--dark-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-description {
-            color: var(--muted);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .dashboard-section {
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-
-        .dashboard-card {
-            background: var(--dark-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
+        
+        /* Loading Spinner */
+        .loading-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 36vh;
+            color: var(--text-secondary);
             gap: 1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--text);
         }
 
-        .dashboard-card:hover {
-            border-color: var(--primary);
-            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.15);
-            transform: translateY(-8px);
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-default);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .dashboard-icon {
-            font-size: 3rem;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .dashboard-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+        /* Shared components */
+        .page-heading { margin-bottom: 1.25rem; }
+        .page-heading h2 { font-size: 1.35rem; font-weight: 700; }
+        .page-heading p { margin-top: 0.45rem; color: var(--text-secondary); font-size: 0.9rem; }
 
-        .dashboard-description {
-            color: var(--muted);
+        .simulate-btn {
+            background: linear-gradient(145deg, #2563eb, #1d4ed8);
+            color: var(--text-inverse);
+            border: 1px solid rgba(147, 197, 253, 0.35);
+            border-radius: 0.68rem;
+            padding: 0.9rem;
+            font-family: var(--font-sans);
+            font-weight: 700;
             font-size: 0.9rem;
-            line-height: 1.5;
-            flex: 1;
-        }
-
-        .dashboard-button {
-            display: inline-flex;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .dashboard-button:hover {
-            background: var(--primary-dark);
-            transform: translateX(4px);
+        .simulate-btn:hover:not(:disabled) {
+            filter: brightness(1.06);
+            transform: translateY(-1px);
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+        .simulate-btn:disabled {
+            opacity: 0.52;
+            cursor: not-allowed;
         }
 
-        .info-box {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-        }
-
-        .info-box h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .info-box p {
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 1rem;
-        }
-
-        .info-box li {
-            padding: 0.5rem 0;
-            color: var(--muted);
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .info-box li:before {
-            content: "✓";
-            color: var(--secondary);
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        footer {
-            text-align: center;
-            padding: 2rem;
-            border-top: 1px solid var(--border);
-            color: var(--muted);
-            margin-top: 3rem;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        button, a.button {
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            border: none;
+        .reset-btn {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            border-radius: 0.68rem;
+            padding: 0.8rem;
+            font-family: var(--font-sans);
             font-weight: 600;
+            font-size: 0.84rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1rem;
+            transition: var(--transition);
         }
 
-        .button-primary {
-            background: var(--primary);
-            color: white;
+        .reset-btn:hover {
+            border-color: var(--border-strong);
+            background: rgba(148, 163, 184, 0.08);
         }
 
-        .button-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+        /* Simulator Grid layout */
+        .simulator-layout { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
+        .controls-card { display: flex; flex-direction: column; gap: 1.5rem; height: fit-content; }
+        .control-group-title { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .scenario-select { display: flex; flex-direction: column; gap: 0.75rem; }
+        .scenario-btn { background: var(--bg-subtle); border: 1px solid var(--border-default); border-radius: 0.8rem; padding: 0.9rem; text-align: left; cursor: pointer; transition: var(--transition); color: var(--text-primary); position: relative; overflow: hidden; }
+        .scenario-btn:hover { border-color: var(--border-strong); background: rgba(59, 130, 246, 0.08); }
+        .scenario-btn.active { border-color: var(--primary); background: var(--primary-soft); box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.35); }
+        .scenario-btn.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
+        .scenario-name { font-weight: 600; font-size: 0.91rem; margin-bottom: 0.28rem; display: flex; justify-content: space-between; align-items: center; }
+        .scenario-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.42; }
+        .risk-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .risk-high { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .risk-medium { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .risk-low { background: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .action-area { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; }
+        .simulator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .panel-column { display: flex; flex-direction: column; gap: 1rem; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.5rem; }
+        .panel-title { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.65rem; }
+        .vulnerable-title { color: var(--error); }
+        .secure-title { color: var(--success); }
+        .panel-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; text-transform: uppercase; }
+        .vulnerable-badge { background: rgba(239, 68, 68, 0.14); color: #fda4af; }
+        .secure-badge { background: rgba(34, 197, 94, 0.14); color: #86efac; }
+        .viewport-card { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 1.25rem; }
+        
+        /* Flow Nodes (Simulator) */
+        .flow-visualizer { display: flex; align-items: center; justify-content: space-between; background: rgba(2, 6, 23, 0.35); padding: 1rem; border-radius: 0.75rem; border: 1px solid var(--border-default); position: relative; }
+        .flow-node { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; z-index: 2; opacity: 0.4; transition: var(--transition); }
+        .flow-node svg { width: 2.2rem; height: 2.2rem; padding: 0.45rem; border-radius: 50%; background: var(--bg-card); border: 1.5px solid var(--border-default); color: var(--text-secondary); transition: var(--transition); }
+        .flow-node-title { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
+        .flow-node.active, .flow-node.completed, .flow-node.blocked { opacity: 1; }
+        .flow-node.active svg { color: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); transform: scale(1.1); }
+        .flow-node.completed svg { color: var(--success); border-color: var(--success); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
+        .flow-node.blocked svg { color: var(--error); border-color: var(--error); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
+        .flow-connection { flex: 1; height: 2px; background: var(--border-default); margin: 0 -0.5rem; position: relative; z-index: 1; }
+        
+        /* Terminal & DB Mock */
+        .terminal-block { background: #060d1a; border: 1px solid var(--border-default); border-radius: 0.75rem; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7); }
+        .term-line { line-height: 1.5; word-break: break-all; }
+        .term-prompt { color: var(--success); font-weight: 600; }
+        .term-prompt-vuln { color: var(--error); font-weight: 600; }
+        .term-info { color: var(--text-primary); }
+        .term-warning { color: var(--warning); }
+        .term-danger { color: var(--error); font-weight: bold; }
+        .term-success { color: var(--success); }
+        .db-status-card { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-default); border-radius: 0.75rem; padding: 1rem; }
+        .db-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.05em; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-default); padding-bottom: 0.5rem; }
+        .db-status-dot { display: flex; align-items: center; gap: 0.4rem; }
+        .db-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
+        .db-dot.destroyed { background: var(--error); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); animation: pulse-danger 1.5s infinite; }
+        @keyframes pulse-danger { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        .db-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left; }
+        .db-table th { color: var(--text-secondary); font-weight: 600; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border-default); }
+        .db-table td { padding: 0.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.02); }
+        .blocked-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(6, 12, 26, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; opacity: 0; pointer-events: none; transition: var(--transition); padding: 2rem; text-align: center; border-radius: 0.85rem; }
+        .blocked-overlay.show { opacity: 1; pointer-events: auto; }
+        .shield-icon { font-size: 3rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .blocked-title { font-size: 1.1rem; font-weight: 700; color: #fda4af; margin-bottom: 0.5rem; }
+        .blocked-desc { font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; line-height: 1.5; }
+        .hitl-panel { background: rgba(255, 165, 0, 0.08); border: 1px solid var(--warning); border-radius: 8px; padding: 0.85rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.6rem; animation: border-pulse 2s infinite alternate; }
+        @keyframes border-pulse { from { border-color: hsla(38, 100%, 50%, 0.4); } to { border-color: hsla(38, 100%, 50%, 1); } }
+        .hitl-header { font-size: 0.75rem; font-weight: 700; color: var(--warning); display: flex; justify-content: space-between; }
+        .hitl-buttons { display: flex; gap: 0.5rem; }
+        .hitl-btn { flex: 1; padding: 0.4rem; border-radius: 6px; font-family: var(--font-sans); font-weight: 700; font-size: 0.75rem; cursor: pointer; border: none; transition: var(--transition); }
+        .hitl-approve { background: var(--success); color: white; }
+        .hitl-approve:hover { filter: brightness(1.1); }
+        .hitl-reject { background: var(--error); color: white; }
+        .hitl-reject:hover { filter: brightness(1.1); }
+
+        /* Observatory UI */
+        .observatory-grid { display: flex; flex-direction: column; gap: 1.5rem; }
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .kpi-card { background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 0.9rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); font-weight: 600; }
+        .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
+        .kpi-trend { font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+        .trend-up { color: var(--success); }
+        .trend-neutral { color: var(--text-secondary); }
+        .observatory-main-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; }
+        .card-header-with-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+        .refresh-indicator { font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; }
+        .pulse-green { width: 6px; height: 6px; border-radius: 50%; background: var(--success); display: inline-block; animation: pulse-success 1.5s infinite; }
+        @keyframes pulse-success { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        .data-table-container { overflow-x: auto; }
+        .premium-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+        .premium-table th { color: var(--text-secondary); font-weight: 600; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-default); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em; }
+        .premium-table td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: var(--text-primary); }
+        .premium-table tbody tr:hover { background: rgba(255, 255, 255, 0.01); }
+        .badge-status { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+        .badge-allow { background: rgba(34, 197, 94, 0.14); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-block { background: rgba(239, 68, 68, 0.14); color: #fda4af; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-pending { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .audit-stream { display: flex; flex-direction: column; gap: 0.75rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; }
+        .audit-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-default); border-radius: 0.7rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem; transition: var(--transition); }
+        .audit-item:hover { border-color: var(--border-strong); background: rgba(255, 255, 255, 0.03); }
+        .audit-meta { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-secondary); }
+        .audit-title { font-weight: 600; font-size: 0.82rem; color: var(--text-primary); }
+        .audit-desc { font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono); background: rgba(2, 6, 23, 0.45); padding: 0.35rem 0.5rem; border-radius: 4px; margin-top: 0.1rem; }
+
+        /* Architecture UI */
+        .arch-tab-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .arch-intro h2 { font-size: 1.55rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .arch-intro p { color: var(--text-secondary); font-size: 0.93rem; line-height: 1.5; margin-bottom: 1.5rem; }
+        .layer-flow-container { display: flex; flex-direction: column; gap: 0.75rem; }
+        .layer-interactive-card { background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 0.75rem; overflow: hidden; transition: var(--transition); }
+        .layer-interactive-card:hover { border-color: var(--primary); box-shadow: 0 4px 15px rgba(0, 149, 255, 0.08); }
+        .layer-header-bar { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; cursor: pointer; background: transparent; transition: var(--transition); }
+        .layer-interactive-card:hover .layer-header-bar { background: rgba(255, 255, 255, 0.01); }
+        .layer-badge-num { min-width: 2.2rem; height: 2.2rem; border-radius: 50%; background: linear-gradient(140deg, #2563eb, #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; box-shadow: 0 8px 12px rgba(37, 99, 235, 0.25); }
+        .layer-title-text { flex: 1; }
+        .layer-title-name { font-weight: 700; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.15rem; }
+        .layer-title-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .layer-chevron { color: var(--text-secondary); font-size: 0.8rem; transition: var(--transition); }
+        .layer-interactive-card.active .layer-chevron { transform: rotate(180deg); color: var(--primary); }
+        .layer-details-content { display: none; padding: 1rem 1.25rem 1.25rem; border-top: 1px solid var(--border-default); background: rgba(2, 6, 23, 0.32); animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .layer-details-content pre { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); background: #060d1a; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-default); margin: 0; }
+        .static-arch-desc { display: flex; flex-direction: column; gap: 1.5rem; }
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .feature-box { padding: 1.1rem; background: rgba(255, 255, 255, 0.02); border-radius: 0.75rem; border: 1px solid var(--border-default); }
+        .feature-box h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; }
+        .feature-box p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
+
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 1.5rem 2.25rem;
+            border-top: 1px solid var(--border-default);
+            background: rgba(11, 18, 32, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
-        .button-secondary {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text);
-        }
-
-        .button-secondary:hover {
-            border-color: var(--primary);
+        footer a {
             color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+        footer a:hover {
+            color: var(--text-inverse);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        @media (max-width: 1100px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
             }
 
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            .nav-tabs {
+                width: 100%;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 900px) {
+            main {
+                padding: 1.25rem 1rem 1.5rem;
             }
 
-            .intro-section {
-                padding: 1.5rem;
+            .simulator-layout,
+            .simulator-grid,
+            .observatory-main-grid,
+            .arch-tab-layout,
+            .kpi-row,
+            .features-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
             }
         }
     </style>
 </head>
 <body>
+
     <header>
-        <div class="header-content">
-            <div class="logo-container">🔒</div>
-            <h1>Aegis</h1>
-            <p class="tagline">Protecting Autonomous AI Systems from Dangerous Operations</p>
-            <div class="status-bar">
-                <div class="status-item">
-                    <div class="status-dot"></div>
-                    <span>System Online</span>
-                </div>
-                <div class="status-item">
-                    <div class="status-dot"></div>
-                    <span>All Services Running</span>
-                </div>
-                <div class="status-item">
-                    <div class="status-dot"></div>
-                    <span>Monitoring Active</span>
-                </div>
+        <div class="logo-area">
+            <div class="logo-shield">AG</div>
+            <div class="logo-text">
+                <h1>Aegis Platform Console</h1>
+                <div class="header-desc">Runtime governance for AI agents and data operations</div>
             </div>
+        </div>
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="simulator" onclick="loadTab('simulator')">
+                Security Simulator
+            </button>
+            <button class="tab-btn" data-tab="agent_live_montior" onclick="loadTab('agent_live_montior')">
+                Agent Live Monitor
+            </button>
+            <button class="tab-btn" data-tab="architecture" onclick="loadTab('architecture')">
+                Platform Architecture
+            </button>
         </div>
     </header>
 
     <main>
-        <div class="intro-section">
-            <h2>Why Your Business Needs AI Agent Safety</h2>
-            <p>
-                AI agents are becoming increasingly autonomous, but without proper safety guardrails, a single bad decision 
-                can delete databases, compromise security, or cause data loss. Our safety gateway evaluates every action through 
-                a 7-layer defense system before execution.
-            </p>
-            <p style="color: var(--secondary); font-weight: 600;">
-                ✓ 98%+ of dangerous actions blocked | ✓ 100% data integrity | ✓ Complete audit trail
-            </p>
-        </div>
-
-        <div class="feature-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
-                <div class="feature-title">7-Layer Safety Evaluation</div>
-                <p class="feature-description">Every action is validated against policy, risk scoring, resource limits, and more.</p>
+        <section id="content-area" class="tab-content-panel">
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <div>Initializing console...</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">⏸️</div>
-                <div class="feature-title">Human Approval Loop</div>
-                <p class="feature-description">Critical operations require human verification before execution.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔐</div>
-                <div class="feature-title">Complete Audit Trail</div>
-                <p class="feature-description">Every action is logged with context, decision reasoning, and results.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <div class="feature-title">Real-time Monitoring</div>
-                <p class="feature-description">Live dashboards show all agent activities and safety decisions instantly.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔄</div>
-                <div class="feature-title">Automated Backups</div>
-                <p class="feature-description">Encrypted backups protect against accidental data loss or corruption.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <div class="feature-title">Risk Intelligence</div>
-                <p class="feature-description">Advanced risk scoring identifies dangerous patterns before execution.</p>
-            </div>
-        </div>
-
-        <div class="dashboard-section">
-            <h2 class="section-title">Choose Your Dashboard</h2>
-            <div class="dashboard-grid">
-                <a href="client-dashboard.html" class="dashboard-card">
-                    <div class="dashboard-icon">📊</div>
-                    <div class="dashboard-title">Operations Dashboard</div>
-                    <p class="dashboard-description">
-                        Executive summary showing metrics, active agents, safety status, and with/without protection comparison. 
-                        Best for C-suite and compliance teams.
-                    </p>
-                    <button class="dashboard-button">Open Dashboard →</button>
-                </a>
-
-                <a href="agent-live-monitor.html" class="dashboard-card">
-                    <div class="dashboard-icon">🤖</div>
-                    <div class="dashboard-title">AI Agent Monitor</div>
-                    <p class="dashboard-description">
-                        Real-time view of AI agent activities, execution logs, safety decisions. Shows exactly how your project 
-                        protects against dangerous operations with GPT-4o mini.
-                    </p>
-                    <button class="dashboard-button">Open Monitor →</button>
-                </a>
-
-                <a href="dashboard.html" class="dashboard-card">
-                    <div class="dashboard-icon">🔧</div>
-                    <div class="dashboard-title">Technical Dashboard</div>
-                    <p class="dashboard-description">
-                        Detailed operations view with API metrics, request logs, error tracking, and system health. 
-                        Best for DevOps and technical teams.
-                    </p>
-                    <button class="dashboard-button">Open Dashboard →</button>
-                </a>
-            </div>
-        </div>
-
-        <div class="info-grid">
-            <div class="info-box">
-                <h3>🎯 With Safety Gateway</h3>
-                <ul>
-                    <li>Dangerous actions blocked (DELETE, DROP, etc.)</li>
-                    <li>High-risk operations require approval</li>
-                    <li>Complete audit trail for compliance</li>
-                    <li>Automatic encrypted backups</li>
-                    <li>Risk scoring on every action</li>
-                    <li>Real-time monitoring and alerts</li>
-                </ul>
-            </div>
-
-            <div class="info-box">
-                <h3>⚠️ Without Safety Gateway</h3>
-                <ul>
-                    <li>All actions execute immediately</li>
-                    <li>No validation or approval process</li>
-                    <li>Potential data loss and corruption</li>
-                    <li>No audit trail for compliance</li>
-                    <li>Cannot recover from mistakes</li>
-                    <li>Security vulnerabilities exposed</li>
-                </ul>
-            </div>
-
-            <div class="info-box">
-                <h3>📋 Module Overview</h3>
-                <ul>
-                    <li><strong>Policy Engine</strong> - Validates against rules</li>
-                    <li><strong>Risk Scoring</strong> - Calculates threat level</li>
-                    <li><strong>Human Loop</strong> - Approval for critical ops</li>
-                    <li><strong>Execution</strong> - Safe execution pipeline</li>
-                    <li><strong>Backup/Recovery</strong> - Data protection</li>
-                    <li><strong>Observability</strong> - Complete audit logs</li>
-                </ul>
-            </div>
-        </div>
-
-        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%); 
-                    border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; text-align: center; margin-bottom: 3rem;">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Ready to Get Started?</h3>
-            <p style="color: var(--muted); margin-bottom: 2rem; font-size: 1.05rem;">
-                Start with the Operations Dashboard to see your safety metrics, then open the AI Agent Monitor to watch real-time 
-                protection in action with your GPT-4o mini agent.
-            </p>
-            <div class="button-group">
-                <a href="client-dashboard.html" class="button button-primary">📊 Operations Dashboard</a>
-                <a href="agent-live-monitor.html" class="button button-primary">🤖 AI Agent Monitor</a>
-            </div>
-        </div>
-
-        <div style="background: var(--dark-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 3rem;">
-            <h3 style="margin-bottom: 1rem;">API Access</h3>
-            <p style="color: var(--muted); margin-bottom: 1.5rem;">
-                Integrate the Safety Gateway with your AI agents via our REST API:
-            </p>
-            <code style="display: block; background: #000; padding: 1rem; border-radius: 6px; overflow-x: auto; color: #0f0; font-family: monospace;">
-POST /v1/actions HTTP/1.1<br/>
-Host: your-gateway.com<br/>
-Content-Type: application/json<br/>
-<br/>
-{<br/>
-  "verb": "DELETE",<br/>
-  "resource": "table:users",<br/>
-  "environment": "production",<br/>
-  "role": "operator",<br/>
-  "actor_id": "agent-001"<br/>
-}
-            </code>
-            <p style="color: var(--muted); margin-top: 1rem; font-size: 0.9rem;">
-                📖 <a href="/docs" style="color: var(--primary); text-decoration: none;">View Full API Documentation →</a>
-            </p>
-        </div>
+        </section>
     </main>
 
     <footer>
-        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">
-            <strong>Aegis</strong> - Enterprise Protection for Autonomous Systems
-        </p>
-        <p>© 2026 | Version 1.0.0 | Production Ready</p>
-        <p style="margin-top: 1.5rem; color: var(--muted);">
-            <a href="/docs" style="color: var(--primary); text-decoration: none;">API Docs</a> • 
-            <a href="/health" style="color: var(--primary); text-decoration: none;">Health Check</a> • 
-            <a href="https://github.com" style="color: var(--primary); text-decoration: none;">GitHub</a>
-        </p>
+        <div>Aegis Platform Console</div>
+        <div class="footer-links">
+            <a href="/docs" target="_blank">API Documentation</a>
+            <a href="https://github.com" target="_blank">Source Code</a>
+        </div>
     </footer>
+
+    <script>
+        const htmlCache = {};
+
+        async function loadTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <div>Loading view...</div>
+                </div>
+            `;
+
+            try {
+                if (!htmlCache[tabId]) {
+                    const response = await fetch(`/static/${tabId}.html`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    htmlCache[tabId] = await response.text();
+                }
+
+                contentArea.innerHTML = htmlCache[tabId];
+                const scripts = contentArea.querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                    document.body.removeChild(newScript);
+                });
+
+            } catch (err) {
+                console.error(`Failed to load component ${tabId}:`, err);
+                contentArea.innerHTML = `
+                    <div style="color: #fca5a5; padding: 3rem; text-align: center; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px; background: rgba(239, 68, 68, 0.08);">
+                        <h3>Unable to load view</h3>
+                        <p>${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadTab('simulator');
+        });
+    </script>
 </body>
 </html>

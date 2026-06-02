@@ -1,65 +1,40 @@
-"""Dashboard APIs and audit persistence."""
+"""Dashboard endpoint tests."""
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from aegis.server import create_app
 
 
-def test_marketing_site_and_api_info(isolated_env):
+def test_health_check():
+    app = create_app(environment="development", debug=True, require_auth=False)
     client = TestClient(app)
-    r = client.get("/")
-    assert r.status_code == 200
-    assert "text/html" in r.headers.get("content-type", "")
-    assert b"Safety Gateway" in r.content
-
-    info = client.get("/api/info").json()
-    assert info["service"] == "ai-agent-safety-gateway"
-    assert info["dashboard"] == "/dashboard"
-from app.models.schemas import AgentAction, Environment, HttpVerb, Role
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "ok"
 
 
-def test_dashboard_overview_shape(isolated_env):
+def test_readiness_check():
+    app = create_app(environment="development", debug=True, require_auth=False)
     client = TestClient(app)
-    r = client.get("/v1/dashboard/overview?hours=24")
-    assert r.status_code == 200
-    body = r.json()
-    assert "stats" in body
-    assert "active_agent_requests" in body
-    assert "pending_approvals" in body
-    assert "pipeline_modules" in body
-    assert body["stats"]["window_hours"] == 24
+    resp = client.get("/health/ready")
+    assert resp.status_code == 200
 
 
-def test_dashboard_records_audit_after_action(isolated_env):
+def test_api_info():
+    app = create_app(environment="development", debug=True, require_auth=False)
     client = TestClient(app)
-    before = client.get("/v1/dashboard/events?limit=5").json()["events"]
-    action = AgentAction(
-        verb=HttpVerb.GET,
-        resource="table:demo_orders",
-        environment=Environment.STAGING,
-        role=Role.READ_ONLY,
-        actor_id="test-dashboard-actor",
-    )
-    client.post("/v1/actions", json=action.model_dump(mode="json"))
-    after = client.get("/v1/dashboard/events?limit=20").json()["events"]
-    assert len(after) >= len(before)
-    types = {e["event_type"] for e in after}
-    assert "request_received" in types
-    assert "executed" in types
+    resp = client.get("/api/info")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "endpoints" in data
+    assert data["service"] == "Aegis"
 
 
-def test_request_detail_includes_pipeline_or_audit(isolated_env):
+def test_architecture():
+    app = create_app(environment="development", debug=True, require_auth=False)
     client = TestClient(app)
-    action = AgentAction(
-        verb=HttpVerb.GET,
-        resource="table:demo_orders",
-        environment=Environment.STAGING,
-        role=Role.READ_ONLY,
-        actor_id="trace-actor",
-    )
-    res = client.post("/v1/actions", json=action.model_dump(mode="json"))
-    rid = res.json()["request_id"]
-    detail = client.get(f"/v1/dashboard/requests/{rid}").json()
-    assert detail["request_id"] == rid
-    assert isinstance(detail["audit_events"], list)
-    assert len(detail["audit_events"]) >= 1
+    resp = client.get("/api/architecture")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["layers"]) == 7

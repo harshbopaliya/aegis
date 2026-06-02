@@ -95,20 +95,20 @@ pytest -m "not slow" -v
 # Format code
 make format
 # or
-black app/ tests/
+black aegis/ tests/
 
 # Lint code
 make lint
 # or
-flake8 app/ tests/
+flake8 aegis/ tests/
 
 # Type checking
 make typecheck
 # or
-mypy app/
+mypy aegis/
 
 # Security scanning
-bandit -r app/
+bandit -r aegis/
 
 # All checks
 make quality
@@ -121,7 +121,7 @@ make quality
 make run
 
 # or manually
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+aegis serve --debug
 ```
 
 ### Docker Development
@@ -148,10 +148,10 @@ This project uses **Black** for code formatting and follows **PEP 8**. Configura
 
 ```bash
 # Format all Python files
-black app/ tests/
+black aegis/ tests/
 
 # Check formatting without changing files
-black --check app/ tests/
+black --check aegis/ tests/
 ```
 
 ### Git Commit Messages
@@ -197,7 +197,7 @@ Closes #42
 ```python
 # tests/test_example.py
 import pytest
-from app.core.service import Example
+from aegis.core.db import connect
 
 class TestExample:
     """Test Example service."""
@@ -277,8 +277,8 @@ Contributors will be recognized in:
 
 - 📚 Check the [README.md](README.md)
 - 📖 Read [PRODUCTION_README.md](PRODUCTION_README.md)
-- 🐛 Search [existing issues](https://github.com/OWNER/aegis/issues)
-- 💬 Start a [discussion](https://github.com/OWNER/aegis/discussions)
+- 🐛 Search [existing issues](https://github.com/harshbopaliya/aegis/issues)
+- 💬 Start a [discussion](https://github.com/harshbopaliya/aegis/discussions)
 
 Thank you for contributing to making AI systems safer! 🔒
 

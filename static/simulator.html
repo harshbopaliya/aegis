@@ -1,0 +1,481 @@
+<div class="page-heading">
+    <h2>Security Scenario Simulator</h2>
+    <p>Compare direct agent execution against Aegis-governed execution across representative production risk scenarios.</p>
+</div>
+
+<div class="simulator-layout">
+    <div class="glass-card controls-card">
+        <div>
+            <div class="control-group-title">Scenario Catalog</div>
+            <div class="scenario-select">
+                <button class="scenario-btn active" onclick="selectScenario('upgrade-schema', this)">
+                    <div class="scenario-name">
+                        <span>Schema Migration Request</span>
+                        <span class="risk-badge risk-high">High Risk</span>
+                    </div>
+                    <div class="scenario-desc">Agent is asked to add one column but generates destructive DDL that drops and recreates the users table.</div>
+                </button>
+                <button class="scenario-btn" onclick="selectScenario('read-payments', this)">
+                    <div class="scenario-name">
+                        <span>Sensitive Billing Access</span>
+                        <span class="risk-badge risk-medium">Medium Risk</span>
+                    </div>
+                    <div class="scenario-desc">Agent attempts to query high-sensitivity billing fields that require explicit business approval.</div>
+                </button>
+                <button class="scenario-btn" onclick="selectScenario('read-orders', this)">
+                    <div class="scenario-name">
+                        <span>Schema Inspection</span>
+                        <span class="risk-badge risk-low">Low Risk</span>
+                    </div>
+                    <div class="scenario-desc">Agent performs a benign read-only metadata check against the users schema.</div>
+                </button>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="simulate-btn" id="runBtn" onclick="startSimulation()">
+                <svg style="width:18px;height:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" /></svg>
+                Run Scenario
+            </button>
+            <button class="reset-btn" onclick="resetSimulation()">Reset Session</button>
+        </div>
+    </div>
+
+    <div class="simulator-grid">
+        <div class="panel-column">
+            <div class="panel-header">
+                <div class="panel-title vulnerable-title">
+                    <svg style="width:20px;height:20px" viewBox="0 0 24 24"><path fill="currentColor" d="M13 14H11V9H13V14M13 18H11V16H13V18M1 21H23L12 2L1 21Z" /></svg>
+                    Direct Execution Path
+                </div>
+                <span class="panel-badge vulnerable-badge">No Controls</span>
+            </div>
+
+            <div class="glass-card viewport-card" id="vulnViewport">
+                <div class="flow-visualizer">
+                    <div class="flow-node active" id="node-v-agent">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4M12,18c-2.67,0 -8,1.34 -8,4v-2c0,-2.66 5.33,-4 8,-4c2.67,0 8,1.34 8,4v2c0,-2.66 -5.33,-4 -8,-4Z"/></svg>
+                        <span class="flow-node-title">Agent</span>
+                    </div>
+                    <div class="flow-connection">
+                        <div class="flow-connection-progress" id="conn-v-progress"></div>
+                    </div>
+                    <div class="flow-node" id="node-v-db">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"/></svg>
+                        <span class="flow-node-title">Database</span>
+                    </div>
+                </div>
+
+                <div class="terminal-block" id="vulnTerminal"></div>
+
+                <div class="db-status-card"></div>
+            </div>
+        </div>
+
+        <div class="panel-column">
+            <div class="panel-header">
+                <div class="panel-title secure-title">
+                    <svg style="width:20px;height:20px" viewBox="0 0 24 24"><path fill="currentColor" d="M12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4M12,18c-2.67,0 -8,1.34 -8,4v-2c0,-2.66 5.33,-4 8,-4c2.67,0 8,1.34 8,4v2c0,-2.66 -5.33,-4 -8,-4Z" /></svg>
+                    Governed Execution Path
+                </div>
+                <span class="panel-badge secure-badge">Aegis Active</span>
+            </div>
+
+            <div class="glass-card viewport-card" id="secureViewport">
+                <div class="blocked-overlay" id="secureOverlay">
+                    <div class="shield-icon" id="secureOverlayIcon">SEC</div>
+                    <div class="blocked-title" id="secureOverlayTitle">Request Protected</div>
+                    <div class="blocked-desc" id="secureOverlayDesc">Aegis policy controls prevented unsafe execution against the production datastore.</div>
+                </div>
+
+                <div class="flow-visualizer">
+                    <div class="flow-node active" id="node-s-agent">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4M12,18c-2.67,0 -8,1.34 -8,4v-2c0,-2.66 5.33,-4 8,-4c2.67,0 8,1.34 8,4v2c0,-2.66 -5.33,-4 -8,-4Z"/></svg>
+                        <span class="flow-node-title">Agent</span>
+                    </div>
+                    <div class="flow-node" id="node-s-gateway">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,13C14.67,13 20,14.34 20,17v2H4v-2C4,14.34 9.33,13 12,13Z"/></svg>
+                        <span class="flow-node-title">Aegis Gateway</span>
+                    </div>
+                    <div class="flow-node" id="node-s-db">
+                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"/></svg>
+                        <span class="flow-node-title">Database</span>
+                    </div>
+                </div>
+
+                <div class="terminal-block" id="secureTerminal"></div>
+                <div class="db-status-card"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function() {
+        if (typeof window.scenarios === 'undefined') {
+            window.currentScenario = 'upgrade-schema';
+            window.isRunning = false;
+            window.timeouts = [];
+
+            window.scenarios = {
+                'upgrade-schema': {
+                    prompt: "Update schema: add an email column to the users table",
+                    sql: "DROP TABLE users; CREATE TABLE users (user_id TEXT, mail_address TEXT, login_timestamp INTEGER);",
+                    risk: "high",
+                    action: "DELETE",
+                    resource: "table:users",
+                    role: "production_operator",
+                    outcome: "block"
+                },
+                'read-payments': {
+                    prompt: "Retrieve customer payment settings",
+                    sql: "SELECT card_number, cvv, expiry FROM billing_info LIMIT 10",
+                    risk: "medium",
+                    action: "GET",
+                    resource: "table:billing_info",
+                    role: "production_operator",
+                    outcome: "hitl"
+                },
+                'read-orders': {
+                    prompt: "Show current columns in the users table",
+                    sql: "PRAGMA table_info(users)",
+                    risk: "low",
+                    action: "GET",
+                    resource: "table:users",
+                    role: "read_only",
+                    outcome: "allow"
+                }
+            };
+
+            window.selectScenario = function(scenarioId, element) {
+                if (window.isRunning) return;
+                window.currentScenario = scenarioId;
+                document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+                window.resetSimulation();
+            };
+
+            window.appendLog = function(termId, text, type = 'info') {
+                const term = document.getElementById(termId);
+                const prompt = termId === 'vulnTerminal' ? 'agent:~$ ' : 'aegis:~$ ';
+                const promptClass = termId === 'vulnTerminal' ? 'term-prompt-vuln' : 'term-prompt';
+                
+                const line = document.createElement('div');
+                line.className = 'term-line';
+                line.innerHTML = `<span class="${promptClass}">${prompt}</span><span class="term-${type}">${text}</span>`;
+                term.appendChild(line);
+                term.scrollTop = term.scrollHeight;
+            };
+
+            window.resetSimulation = function() {
+                window.timeouts.forEach(clearTimeout);
+                window.timeouts = [];
+                window.isRunning = false;
+                const runBtn = document.getElementById('runBtn');
+                if(runBtn) runBtn.disabled = false;
+
+                const vulnViewport = document.getElementById('vulnViewport');
+                if (vulnViewport) {
+                    const vulnDb = vulnViewport.querySelector('.db-status-card');
+                    vulnDb.innerHTML = `
+                        <div class="db-header">
+                            <span>PRODUCTION DATABASE (users)</span>
+                            <div class="db-status-dot">
+                                <span class="db-dot" id="vulnDbDot"></span>
+                                <span id="vulnDbStatusText">Online</span>
+                            </div>
+                        </div>
+                        <table class="db-table">
+                            <thead>
+                                <tr><th>ID</th><th>Username</th><th>Role</th></tr>
+                            </thead>
+                            <tbody id="vulnDbBody">
+                                <tr><td>1</td><td>alice_admin</td><td>admin</td></tr>
+                                <tr><td>2</td><td>bob_developer</td><td>operator</td></tr>
+                                <tr><td>3</td><td>charlie_guest</td><td>read_only</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                const secureViewport = document.getElementById('secureViewport');
+                if (secureViewport) {
+                    const secureDb = secureViewport.querySelector('.db-status-card');
+                    secureDb.innerHTML = `
+                        <div class="db-header">
+                            <span>PRODUCTION DATABASE (users)</span>
+                            <div class="db-status-dot">
+                                <span class="db-dot" id="secureDbDot"></span>
+                                <span id="secureDbStatusText">Online</span>
+                            </div>
+                        </div>
+                        <table class="db-table">
+                            <thead>
+                                <tr><th>ID</th><th>Username</th><th>Role</th></tr>
+                            </thead>
+                            <tbody id="secureDbBody">
+                                <tr><td>1</td><td>alice_admin</td><td>admin</td></tr>
+                                <tr><td>2</td><td>bob_developer</td><td>operator</td></tr>
+                                <tr><td>3</td><td>charlie_guest</td><td>read_only</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                const vulnTerminal = document.getElementById('vulnTerminal');
+                if (vulnTerminal) {
+                    vulnTerminal.innerHTML = `
+                        <div class="term-line"><span class="term-prompt-vuln">agent:~$ </span><span class="term-info">Execution session initialized.</span></div>
+                    `;
+                }
+                const secureTerminal = document.getElementById('secureTerminal');
+                if(secureTerminal) {
+                    secureTerminal.innerHTML = `
+                        <div class="term-line"><span class="term-prompt">aegis:~$ </span><span class="term-info">Gateway policy engine online.</span></div>
+                    `;
+                }
+
+                document.querySelectorAll('.flow-node').forEach(node => {
+                    node.className = 'flow-node';
+                });
+                const nodeVAgent = document.getElementById('node-v-agent');
+                if(nodeVAgent) nodeVAgent.classList.add('active');
+                
+                const nodeSAgent = document.getElementById('node-s-agent');
+                if(nodeSAgent) nodeSAgent.classList.add('active');
+
+                const secureOverlay = document.getElementById('secureOverlay');
+                if(secureOverlay) {
+                    secureOverlay.classList.remove('show');
+                    const icon = document.getElementById('secureOverlayIcon');
+                    icon.className = 'shield-icon';
+                    icon.innerText = 'SEC';
+                }
+            };
+
+            window.fetchRealAgentComparison = async function(sc) {
+                const payload = {
+                    prompt: sc.prompt,
+                    verb: sc.action,
+                    resource: sc.resource,
+                    environment: "production",
+                    role: sc.role || "production_operator",
+                    actor_id: "simulator-agent-gpt4o-mini"
+                };
+                const response = await fetch("/api/demo/compare", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`Demo compare failed with status ${response.status}`);
+                }
+                return await response.json();
+            };
+
+            window.startSimulation = async function() {
+                if (window.isRunning) return;
+                window.isRunning = true;
+                document.getElementById('runBtn').disabled = true;
+
+                const sc = window.scenarios[window.currentScenario];
+                let realAgent = null;
+
+                try {
+                    realAgent = await window.fetchRealAgentComparison(sc);
+                } catch (error) {
+                    window.appendLog('secureTerminal', `Unable to fetch real agent run: ${error.message}`, 'warning');
+                    window.appendLog('secureTerminal', `Continuing with local simulator fallback data.`, 'warning');
+                }
+
+                const modelName = realAgent?.model || "gpt-4o-mini";
+                const agentThought = realAgent?.agent_thought || "No model thought returned.";
+                const agentSql = realAgent?.agent_sql || sc.sql;
+                const gatewayOutcome = realAgent?.with_gateway?.gateway_result?.final_outcome || null;
+                const openaiUsed = Boolean(realAgent?.openai_used);
+
+                window.appendLog('vulnTerminal', `Agent receives raw instruction: "${sc.prompt}"`, 'info');
+                window.appendLog('vulnTerminal', `Model selected: ${modelName} (${openaiUsed ? "OpenAI live" : "fallback mode"})`, 'info');
+                
+                window.timeouts.push(setTimeout(() => {
+                    window.appendLog('vulnTerminal', `Agent thought: "${agentThought}"`, 'warning');
+                    window.appendLog('vulnTerminal', `Agent plans SQL query: "${agentSql}"`, 'warning');
+                    document.getElementById('node-v-agent').classList.remove('active');
+                    document.getElementById('node-v-agent').classList.add('completed');
+                    document.getElementById('node-v-db').classList.add('active');
+                }, 1200));
+
+                window.timeouts.push(setTimeout(() => {
+                    window.appendLog('vulnTerminal', `Sending direct payload execution to Production database...`, 'info');
+                }, 2200));
+
+                window.timeouts.push(setTimeout(() => {
+                    if (window.currentScenario === 'upgrade-schema') {
+                        window.appendLog('vulnTerminal', `Table 'users' dropped successfully.`, 'danger');
+                        window.appendLog('vulnTerminal', `New schema initialized with columns: (user_id, mail_address, login_timestamp).`, 'warning');
+                        window.appendLog('vulnTerminal', `CRITICAL ACCIDENT: All existing customer records (Alice, Bob, Charlie) have been wiped!`, 'danger');
+                        
+                        const vulnDb = document.getElementById('vulnViewport').querySelector('.db-status-card');
+                        vulnDb.innerHTML = `
+                            <div class="db-header">
+                                <span>PRODUCTION DATABASE (users)</span>
+                                <div class="db-status-dot">
+                                    <span class="db-dot destroyed" id="vulnDbDot"></span>
+                                    <span id="vulnDbStatusText" style="color: var(--error)">SCHEMA CORRUPTED</span>
+                                </div>
+                            </div>
+                            <table class="db-table">
+                                <thead>
+                                    <tr style="color: var(--error)"><th>User ID (TEXT)</th><th>Mail Address (TEXT)</th><th>Login Timestamp (INT)</th></tr>
+                                </thead>
+                                <tbody id="vulnDbBody">
+                                    <tr class="empty-row"><td colspan="3" style="color: var(--error); font-weight: bold; text-align: center; padding: 2rem;">WIPED AND RECREATED (0 rows)</td></tr>
+                                </tbody>
+                            </table>
+                        `;
+                    } else if (window.currentScenario === 'read-payments') {
+                        window.appendLog('vulnTerminal', `Exfiltrated 3 billing records containing cleartext customer payment credentials.`, 'danger');
+                        document.getElementById('vulnDbBody').innerHTML = `
+                            <tr style="background: rgba(255, 0, 0, 0.05)"><td colspan="3" style="text-align: center; color: var(--error)">DATA EXFILTRATED (Sensitive billing fields exposed)</td></tr>
+                        `;
+                    } else {
+                        window.appendLog('vulnTerminal', `Fetched database schema columns successfully.`, 'success');
+                    }
+                    document.getElementById('node-v-db').classList.remove('active');
+                    document.getElementById('node-v-db').classList.add('completed');
+                }, 3200));
+
+                window.appendLog('secureTerminal', `Agent receives raw instruction: "${sc.prompt}"`, 'info');
+                window.appendLog('secureTerminal', `Model selected: ${modelName} (${openaiUsed ? "OpenAI live" : "fallback mode"})`, 'info');
+                
+                window.timeouts.push(setTimeout(() => {
+                    window.appendLog('secureTerminal', `Intercepted by Aegis! Request wrapped into safe AgentAction envelope.`, 'warning');
+                    document.getElementById('node-s-agent').classList.remove('active');
+                    document.getElementById('node-s-agent').classList.add('completed');
+                    document.getElementById('node-s-gateway').classList.add('active');
+                }, 1000));
+
+                window.timeouts.push(setTimeout(() => {
+                    window.appendLog('secureTerminal', `Aegis Gateway evaluating action through the runtime safety pipeline...`, 'info');
+                }, 1800));
+
+                window.timeouts.push(setTimeout(() => {
+                    window.appendLog('secureTerminal', `[Layer 1] Agent Registry and Token Scope: Identity and role verified.`, 'success');
+                }, 2200));
+
+                window.timeouts.push(setTimeout(() => {
+                    if (window.currentScenario === 'upgrade-schema') {
+                        window.appendLog('secureTerminal', `[Layer 2] Policy Engine: Blocked destructive command on protected table 'users'.`, 'danger');
+                        window.appendLog('secureTerminal', `[Layer 3] Sandbox Simulation: Predicted table drop and data loss.`, 'danger');
+                        window.appendLog('secureTerminal', `[Layer 4] Risk Scoring: Computed score 98/100 (CRITICAL).`, 'danger');
+                        window.appendLog('secureTerminal', `[Layer 7] Observability: Blocking decision written to immutable audit trail.`, 'danger');
+                        window.appendLog('secureTerminal', `[Outcome] Execution halted before database mutation.`, 'danger');
+                        window.showSecureOutcome(gatewayOutcome && gatewayOutcome.startsWith('blocked') ? 'blocked' : 'approved');
+                    } else if (window.currentScenario === 'read-payments') {
+                        window.appendLog('secureTerminal', `[Layer 2] Policy Engine: Sensitive table access requires approval.`, 'warning');
+                        window.appendLog('secureTerminal', `[Layer 4] Risk Scoring: Computed score 75/100 (HIGH).`, 'warning');
+                        if (gatewayOutcome === 'pending_human_approval') {
+                            window.appendLog('secureTerminal', `[Layer 5] Human-in-the-Loop: Execution paused for operator decision.`, 'warning');
+                            window.showHITLOption();
+                        } else if (gatewayOutcome && gatewayOutcome.startsWith('blocked')) {
+                            window.appendLog('secureTerminal', `[Layer 5] Human-in-the-Loop: Request denied by policy before approval.`, 'danger');
+                            window.showSecureOutcome('blocked');
+                        } else {
+                            window.appendLog('secureTerminal', `[Layer 6] Controlled Execution: Request approved and executed.`, 'success');
+                            window.showSecureOutcome('approved');
+                        }
+                    } else {
+                        window.appendLog('secureTerminal', `[Layer 2] Policy Engine: Read-only action allowed.`, 'success');
+                        window.appendLog('secureTerminal', `[Layer 4] Risk Scoring: Computed score 10/100 (LOW).`, 'success');
+                        window.appendLog('secureTerminal', `[Layer 6] Controlled Execution: Forwarding request to execution backend.`, 'info');
+                        window.timeouts.push(setTimeout(() => {
+                            window.appendLog('secureTerminal', `[Layer 7] Observability: Execution outcome recorded in audit stream.`, 'success');
+                            window.appendLog('secureTerminal', `Execution complete. Returned schema definition: (id, username, role).`, 'success');
+                            if (gatewayOutcome && gatewayOutcome.startsWith('blocked')) {
+                                document.getElementById('node-s-gateway').classList.remove('active');
+                                document.getElementById('node-s-gateway').classList.add('blocked');
+                            } else {
+                                document.getElementById('node-s-gateway').classList.remove('active');
+                                document.getElementById('node-s-gateway').classList.add('completed');
+                                document.getElementById('node-s-db').classList.add('completed');
+                            }
+                        }, 1000));
+                    }
+                }, 3000));
+            };
+
+            window.showSecureOutcome = function(status) {
+                const overlay = document.getElementById('secureOverlay');
+                const icon = document.getElementById('secureOverlayIcon');
+                const title = document.getElementById('secureOverlayTitle');
+                const desc = document.getElementById('secureOverlayDesc');
+                
+                document.getElementById('node-s-gateway').classList.remove('active');
+                
+                if (status === 'blocked') {
+                    document.getElementById('node-s-gateway').classList.add('blocked');
+                    icon.className = 'shield-icon alert';
+                    icon.innerText = '!';
+                    title.innerText = "Unsafe Schema Operation Blocked";
+                    desc.innerText = "Aegis policy intercepted destructive DDL on the users table. Existing production records remained intact.";
+                } else if (status === 'approved') {
+                    document.getElementById('node-s-gateway').classList.add('completed');
+                    document.getElementById('node-s-db').classList.add('completed');
+                    icon.className = 'shield-icon';
+                    icon.innerText = 'OK';
+                    title.innerText = "Human Approval Granted";
+                    desc.innerText = "Operator approval allowed controlled execution of the billing query through the governed path.";
+                } else if (status === 'rejected') {
+                    document.getElementById('node-s-gateway').classList.add('blocked');
+                    icon.className = 'shield-icon alert';
+                    icon.innerText = '❌';
+                    title.innerText = "Human Approval Denied";
+                    desc.innerText = "Operator rejected the billing data access request. Sensitive records stayed protected.";
+                }
+                
+                overlay.classList.add('show');
+            };
+
+            window.showHITLOption = function() {
+                const term = document.getElementById('secureTerminal');
+                const hitlBox = document.createElement('div');
+                hitlBox.className = 'hitl-panel';
+                hitlBox.id = 'hitlPanel';
+                hitlBox.innerHTML = `
+                    <div class="hitl-header">
+                        <span>HUMAN APPROVAL REQUIRED</span>
+                        <span>Risk Score: 75/100</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-main)">
+                        Agent requests access to table 'billing_info'. Allow?
+                    </div>
+                    <div class="hitl-buttons">
+                        <button class="hitl-btn hitl-approve" onclick="resolveHITL(true)">Approve</button>
+                        <button class="hitl-btn hitl-reject" onclick="resolveHITL(false)">Reject</button>
+                    </div>
+                `;
+                term.appendChild(hitlBox);
+                term.scrollTop = term.scrollHeight;
+            };
+
+            window.resolveHITL = function(approved) {
+                document.getElementById('hitlPanel').remove();
+                if (approved) {
+                    window.appendLog('secureTerminal', `Human operator approved. Resuming pipeline execution...`, 'success');
+                    window.appendLog('secureTerminal', `[Layer 6] Controlled Execution: Creating pre-execution snapshot for write safety.`, 'info');
+                    window.appendLog('secureTerminal', `Query executed. Returning data logs.`, 'success');
+                    window.appendLog('secureTerminal', `[Layer 7] Observability: Approval and execution recorded.`, 'success');
+                    window.showSecureOutcome('approved');
+                } else {
+                    window.appendLog('secureTerminal', `Human operator rejected. Aborting query.`, 'danger');
+                    window.appendLog('secureTerminal', `[Layer 7] Observability: Rejection recorded in audit stream.`, 'danger');
+                    window.showSecureOutcome('rejected');
+                }
+            };
+        }
+        
+        // Execute reset once injected
+        window.resetSimulation();
+    })();
+</script>

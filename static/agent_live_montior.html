@@ -1,0 +1,403 @@
+<style>
+    .monitor-top-grid {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 1rem;
+    }
+
+    .monitor-side-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .monitor-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .monitor-input,
+    .monitor-select {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-default);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        padding: 0.48rem 0.62rem;
+        font-size: 0.8rem;
+        min-width: 120px;
+    }
+
+    .monitor-btn {
+        border: 1px solid var(--border-default);
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        padding: 0.48rem 0.68rem;
+        font-size: 0.79rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .monitor-btn:hover {
+        border-color: var(--border-strong);
+    }
+
+    .section-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.78rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .chip-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .module-chip {
+        border: 1px solid var(--border-default);
+        background: rgba(59, 130, 246, 0.09);
+        color: #bfdbfe;
+        padding: 0.28rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .snapshot-list,
+    .completion-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        max-height: 260px;
+        overflow-y: auto;
+        padding-right: 0.35rem;
+    }
+
+    .mini-item {
+        border: 1px solid var(--border-default);
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 0.65rem;
+        padding: 0.58rem 0.65rem;
+        font-size: 0.74rem;
+    }
+
+    .mini-item strong {
+        color: var(--text-primary);
+    }
+
+    .mini-muted {
+        color: var(--text-secondary);
+        font-size: 0.68rem;
+        margin-top: 0.24rem;
+    }
+
+    .request-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.9rem;
+    }
+
+    .detail-block {
+        border: 1px solid var(--border-default);
+        background: rgba(2, 6, 23, 0.28);
+        border-radius: 0.75rem;
+        padding: 0.8rem;
+    }
+
+    .detail-title {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-content {
+        font-size: 0.76rem;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    @media (max-width: 1050px) {
+        .monitor-top-grid,
+        .request-detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="observatory-grid">
+    <div class="page-heading">
+        <h2>Agent Live Monitor</h2>
+        <p>Production observability console for live agent decisions, pipeline traces, approvals, and execution outcomes.</p>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-label">Active Pipelines</div>
+            <div class="kpi-value" id="kpi-pipelines">0</div>
+            <div class="kpi-trend trend-neutral">Requests currently in-flight</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Policy Blocks</div>
+            <div class="kpi-value" id="kpi-blocked" style="color: var(--error)">0</div>
+            <div class="kpi-trend trend-up">Denied by policy/risk controls</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Pending Approvals</div>
+            <div class="kpi-value" id="kpi-pending" style="color: var(--warning)">0</div>
+            <div class="kpi-trend trend-neutral">Waiting for human response</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Average Latency</div>
+            <div class="kpi-value" id="kpi-latency">0 ms</div>
+            <div class="kpi-trend trend-up">Safety pipeline processing time</div>
+        </div>
+    </div>
+
+    <div class="monitor-top-grid">
+        <div class="glass-card">
+            <div class="monitor-toolbar">
+                <h3 class="card-title">Live Request Activity</h3>
+                <div class="toolbar-controls">
+                    <select id="hoursFilter" class="monitor-select">
+                        <option value="1">Last 1h</option>
+                        <option value="6">Last 6h</option>
+                        <option value="24" selected>Last 24h</option>
+                        <option value="72">Last 72h</option>
+                    </select>
+                    <button class="monitor-btn" onclick="window.refreshAgentLiveMonitor()">Refresh</button>
+                </div>
+            </div>
+            <div class="data-table-container">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Timestamp</th>
+                            <th>Actor</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="live-requests-tbody">
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:2rem;">Loading request activity...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="monitor-side-stack">
+            <div class="glass-card">
+                <h3 class="card-title">Enabled Modules</h3>
+                <p class="section-subtitle">Modules returned by `dashboard/overview`</p>
+                <div id="moduleChips" class="chip-list"></div>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Recent Snapshots</h3>
+                <p class="section-subtitle">Backup checkpoints for write paths</p>
+                <div id="snapshotList" class="snapshot-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="observatory-main-grid">
+        <div class="glass-card">
+            <div class="monitor-toolbar">
+                <h3 class="card-title">Audit Events</h3>
+                <div class="toolbar-controls">
+                    <input id="eventsLimit" class="monitor-input" type="number" min="10" max="200" value="80" />
+                    <button class="monitor-btn" onclick="window.refreshAuditEvents()">Reload Events</button>
+                </div>
+            </div>
+            <div class="audit-stream" id="auditStream">
+                <div style="text-align:center;color:var(--text-secondary);padding:2rem;">Loading audit stream...</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="card-title">Recent Completions</h3>
+            <p class="section-subtitle">Most recently finished requests</p>
+            <div id="completionList" class="completion-list"></div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="monitor-toolbar">
+            <h3 class="card-title">Request Detail Inspector</h3>
+            <div class="toolbar-controls">
+                <input id="requestIdInput" class="monitor-input" placeholder="Enter request_id" />
+                <button class="monitor-btn" onclick="window.loadRequestDetail()">Inspect</button>
+            </div>
+        </div>
+        <div class="request-detail-grid">
+            <div class="detail-block">
+                <div class="detail-title">Pipeline State</div>
+                <div id="requestPipeline" class="detail-content">No request selected.</div>
+            </div>
+            <div class="detail-block">
+                <div class="detail-title">Module Outputs</div>
+                <div id="requestModules" class="detail-content">No request selected.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        if (typeof window.refreshAgentLiveMonitor === "undefined") {
+            const authHeaders = { "X-API-Key": "operator-key" };
+
+            function asPrettyJson(value) {
+                try {
+                    return JSON.stringify(value ?? {}, null, 2);
+                } catch (_e) {
+                    return String(value);
+                }
+            }
+
+            function statusBadgeClass(status) {
+                const s = String(status || "").toLowerCase();
+                if (s.includes("block") || s.includes("reject") || s.includes("error")) return "badge-block";
+                if (s.includes("pending") || s.includes("approval")) return "badge-pending";
+                return "badge-allow";
+            }
+
+            window.populateOverview = function(data) {
+                const stats = data.stats || {};
+                document.getElementById("kpi-pipelines").innerText = String((data.active_pipelines || []).length);
+                document.getElementById("kpi-pending").innerText = String((data.pending_approvals || []).length);
+                document.getElementById("kpi-blocked").innerText = String(stats.blocked || 0);
+                document.getElementById("kpi-latency").innerText = `${stats.avg_latency_ms || 0} ms`;
+
+                const reqs = data.active_pipelines || [];
+                const tbody = document.getElementById("live-requests-tbody");
+                if (!reqs.length) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:2rem;">No active requests in this window.</td></tr>`;
+                } else {
+                    tbody.innerHTML = reqs.map((r) => `
+                        <tr>
+                            <td style="font-family:var(--font-mono);"><button class="monitor-btn" onclick="window.inspectRequestId('${r.request_id || ""}')">${r.request_id || "n/a"}</button></td>
+                            <td style="font-family:var(--font-mono);">${r.timestamp ? new Date(r.timestamp).toLocaleTimeString() : "-"}</td>
+                            <td><strong>${r.actor_id || r.agent_id || "unknown"}</strong></td>
+                            <td style="font-family:var(--font-mono);color:var(--primary);">${r.action?.verb || "-"}</td>
+                            <td style="font-family:var(--font-mono);">${r.action?.resource || "-"}</td>
+                            <td><span class="badge-status ${statusBadgeClass(r.status)}">${r.status || "unknown"}</span></td>
+                        </tr>
+                    `).join("");
+                }
+
+                const modules = data.modules || [];
+                const chips = document.getElementById("moduleChips");
+                chips.innerHTML = modules.length
+                    ? modules.map((m) => `<span class="module-chip">${m}</span>`).join("")
+                    : `<span class="mini-muted">No modules returned.</span>`;
+
+                const snapshots = data.snapshots || [];
+                const snapList = document.getElementById("snapshotList");
+                snapList.innerHTML = snapshots.length
+                    ? snapshots.map((s) => `
+                        <div class="mini-item">
+                            <strong>${s.snapshot_id || "snapshot"}</strong>
+                            <div class="mini-muted">Reason: ${s.reason || "n/a"}</div>
+                            <div class="mini-muted">Request: ${s.request_id || "n/a"}</div>
+                        </div>
+                    `).join("")
+                    : `<div class="mini-item"><div class="mini-muted">No snapshots available.</div></div>`;
+
+                const completed = data.recent_completed || [];
+                const completionList = document.getElementById("completionList");
+                completionList.innerHTML = completed.length
+                    ? completed.map((c) => `
+                        <div class="mini-item">
+                            <strong>${c.request_id || "request"}</strong>
+                            <div class="mini-muted">Status: ${c.status || "unknown"}</div>
+                            <div class="mini-muted">Actor: ${c.actor_id || "unknown"}</div>
+                        </div>
+                    `).join("")
+                    : `<div class="mini-item"><div class="mini-muted">No completed requests yet.</div></div>`;
+            };
+
+            window.populateAuditEvents = function(events) {
+                const stream = document.getElementById("auditStream");
+                if (!events || !events.length) {
+                    stream.innerHTML = `<div style="text-align:center;color:var(--text-secondary);padding:2rem;">No audit events found.</div>`;
+                    return;
+                }
+                stream.innerHTML = events.map((e) => `
+                    <div class="audit-item">
+                        <div class="audit-meta">
+                            <span>${e.created_at ? new Date(e.created_at).toLocaleTimeString() : "recent"}</span>
+                            <span class="badge-status ${statusBadgeClass(e.event_type)}">${e.event_type || "event"}</span>
+                        </div>
+                        <div class="audit-title">Request: ${e.request_id || "n/a"} • Actor: ${e.actor_id || "unknown"}</div>
+                        <div class="audit-desc">${asPrettyJson(e.payload || {})}</div>
+                    </div>
+                `).join("");
+            };
+
+            window.refreshAuditEvents = async function() {
+                const limit = Number(document.getElementById("eventsLimit").value || 80);
+                const response = await fetch(`/v1/dashboard/events?limit=${Math.max(10, Math.min(limit, 200))}&offset=0`, { headers: authHeaders });
+                if (!response.ok) throw new Error(`Events API failed (${response.status})`);
+                const events = await response.json();
+                window.populateAuditEvents(events);
+            };
+
+            window.inspectRequestId = function(requestId) {
+                const input = document.getElementById("requestIdInput");
+                input.value = requestId;
+                window.loadRequestDetail();
+            };
+
+            window.loadRequestDetail = async function() {
+                const requestId = (document.getElementById("requestIdInput").value || "").trim();
+                if (!requestId) return;
+                const response = await fetch(`/v1/dashboard/requests/${encodeURIComponent(requestId)}`, { headers: authHeaders });
+                if (!response.ok) throw new Error(`Request detail API failed (${response.status})`);
+                const data = await response.json();
+                document.getElementById("requestPipeline").innerText = asPrettyJson(data.pipeline || {});
+                const moduleData = { ...data };
+                delete moduleData.request_id;
+                delete moduleData.pipeline;
+                document.getElementById("requestModules").innerText = asPrettyJson(moduleData);
+            };
+
+            window.refreshAgentLiveMonitor = async function() {
+                try {
+                    const hours = Number(document.getElementById("hoursFilter").value || 24);
+                    const response = await fetch(`/v1/dashboard/overview?hours=${hours}`, { headers: authHeaders });
+                    if (!response.ok) throw new Error(`Overview API failed (${response.status})`);
+                    const overview = await response.json();
+                    window.populateOverview(overview);
+                    await window.refreshAuditEvents();
+                } catch (err) {
+                    console.warn("Agent live monitor API failed:", err);
+                    document.getElementById("live-requests-tbody").innerHTML =
+                        `<tr><td colspan="6" style="text-align:center;color:var(--error);padding:2rem;">Unable to load live monitoring data. Check server and API key.</td></tr>`;
+                    document.getElementById("auditStream").innerHTML =
+                        `<div style="text-align:center;color:var(--error);padding:2rem;">Audit stream unavailable.</div>`;
+                }
+            };
+        }
+
+        window.refreshAgentLiveMonitor();
+    })();
+</script>

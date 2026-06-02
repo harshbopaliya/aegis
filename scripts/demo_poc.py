@@ -17,15 +17,15 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app.models.schemas import (  # noqa: E402
+from aegis.models.schemas import (  # noqa: E402
     AgentAction,
     ApprovalRequest,
     Environment,
     HttpVerb,
     Role,
 )
-from app.modules import human_loop  # noqa: E402
-from app.services.gateway import process_action, resolve_approval  # noqa: E402
+from aegis.modules import human_loop  # noqa: E402
+from aegis.services.gateway import process_action, resolve_approval  # noqa: E402
 
 
 def main() -> None:

@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+COPY pyproject.toml .
+COPY aegis/ aegis/
+RUN pip install --user --no-cache-dir ".[server]"
 
 # ========== Production Image ==========
 FROM python:3.11-slim
@@ -19,7 +20,8 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    OPENAI_MODEL=gpt-4o-mini
 
 WORKDIR /app
 
@@ -50,8 +52,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8000
 
-# Run application
-CMD ["python", "-m", "uvicorn", "app.main:app", \
+# Run application (import string supports workers cleanly)
+CMD ["python", "-m", "uvicorn", "aegis.server:app", \
      "--host", "0.0.0.0", \
      "--port", "8000", \
      "--workers", "4"]

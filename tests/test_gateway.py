@@ -1,14 +1,14 @@
 """Gateway test cases: safe path, medium risk, high risk / HITL, RBAC deny."""
 
-from app.models.schemas import (
+from aegis.models.schemas import (
     AgentAction,
     ApprovalRequest,
     Environment,
     HttpVerb,
     Role,
 )
-from app.modules import human_loop
-from app.services.gateway import process_action, resolve_approval
+from aegis.modules import human_loop
+from aegis.services.gateway import process_action, resolve_approval
 
 
 def test_safe_read_allowed(isolated_env):
@@ -76,7 +76,7 @@ def test_unauthorized_delete_blocked_at_token_layer(isolated_env):
 
 
 def test_strict_policy_blocks_delete_production(isolated_env, monkeypatch):
-    from app.config import settings
+    from aegis.config import settings
 
     monkeypatch.setattr(settings, "strict_block_delete_production", True)
     action = AgentAction(
